@@ -1,11 +1,6 @@
 import torch
-from torch import nn
-import torch.nn.functional as F
 from torch_geometric.datasets import TUDataset
 from torch_geometric.loader import DataLoader
-# from torch_geometric.logging import init_wandb, log
-from torch_geometric.nn import GCNConv
-from torch_geometric.nn import global_mean_pool
 import matplotlib.pyplot as plt
 from helper import timeSince
 from net import GCN
