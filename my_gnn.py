@@ -8,8 +8,7 @@ import time
 
 def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200): 
     # Define dataset
-    root_name = f'data/TUDataset/{dataset_name}'
-    dataset = TUDataset(root=root_name, name=dataset_name, use_node_attr=True)
+    dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     dataset = dataset.shuffle()
     centered_line = f'Dataset: {dataset}'.center(93)
     print('=' * 93 + f'\n{centered_line}\n' + '=' * 93 + '\n')
@@ -107,6 +106,6 @@ if __name__ == '__main__':
     hidden_channels = 64
     batch_size = 64
     num_epochs = 200
-    dataset_name = 'ER_MD'
+    dataset_name = 'Peking_1'
 
     run(dataset_name, hidden_channels, num_epochs, batch_size)
