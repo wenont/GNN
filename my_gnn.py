@@ -10,13 +10,13 @@ import time
 HIDDEN_CHANNELS = 64
 BATCH_SIZE = 64
 NUM_EPOCHS = 200
-DATASET = 'ENZYMES'
+DATASET = 'DD'
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-root_name = f'data/{DATASET}'
-dataset = TUDataset(root=root_name, name=DATASET)
+ 
+root_name = f'data/TUDataset/{DATASET}'
+dataset = TUDataset(root=root_name, name=DATASET, use_node_attr=True)
 dataset = dataset.shuffle()
+print(f'Data: {dataset[0]}')
 
 train_dataset_size = int(len(dataset) * 0.8)
 train_dataset = dataset[:train_dataset_size]
@@ -26,6 +26,7 @@ train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = GCN(
     in_channels=dataset.num_features,
     hidden_channels=HIDDEN_CHANNELS,
@@ -36,7 +37,6 @@ print(f'Model structure: {model}\n\n')
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-start = time.time()
 def train(loader):
     model.train()
     loss_all = 0
@@ -50,7 +50,6 @@ def train(loader):
         optimizer.step()
     
     return loss_all/len(train_loader.dataset)
-
 
 @torch.no_grad()
 def test(loader):
@@ -69,6 +68,7 @@ print(f'Initial test accuracy: {test_acc:.4f}')
 train_accs = []
 test_accs = []
 losses = []
+start = time.time()
 for epoch in range(NUM_EPOCHS+1):
     loss = train(train_loader)
     train_acc = test(train_loader)
@@ -81,19 +81,21 @@ for epoch in range(NUM_EPOCHS+1):
 
 
 fig, (ax1, ax2) = plt.subplots(2, 1)
-fig.suptitle('Training results')
+fig.suptitle(f'Training results on {DATASET}')
 
 ax1.plot(range(0, NUM_EPOCHS+1, 10), test_accs)
 ax1.plot(range(0, NUM_EPOCHS+1, 10), train_accs)
 ax1.set_ylabel('Accuracy')
 ax1.grid(True)
-ax1.legend(title='Legend', labels=['Test', 'Train'])
+ax1.legend(['Test', 'Train'])
 
 ax2.plot(range(0, NUM_EPOCHS+1, 10), losses)
 ax2.grid(True)
 ax2.set_ylabel('Loss')
-ax2.set_xlabel('epoch number')
-
-plt_name = f'./results/result_{DATASET}.pdf'
-plt.savefig(plt_name)
+ax2.set_xlabel('Epoch number')
+fig.text(
+        0.99, 0.01, 
+        f'HIDDEN_CHANNELS={HIDDEN_CHANNELS}, BATCH_SIZE={BATCH_SIZE}', 
+        horizontalalignment='right', fontsize='xx-small', c='gray')
+plt.savefig(f'./results/result_{DATASET}.pdf')
 plt.show()
