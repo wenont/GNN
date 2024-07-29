@@ -5,14 +5,11 @@ from helper import timeSince, plot_training_results, NetParams
 from net import GCN
 import time
 
-
-def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200): 
+# TODO: add test dataset and test dataloader
+def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200, split=False): 
     # Define dataset
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     dataset = dataset.shuffle()
-    centered_line = f'Dataset: {dataset}'.center(93)
-    print('=' * 93 + f'\n{centered_line}\n' + '=' * 93 + '\n')
-
 
     train_dataset_size = int(len(dataset) * 0.8)
     train_dataset = dataset[:train_dataset_size]
@@ -20,6 +17,9 @@ def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200):
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+    centered_line = f'Dataset: {dataset}'.center(93)
+    print('=' * 93 + f'\n{centered_line}\n' + '=' * 93 + '\n')
 
     # Define model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -79,7 +79,7 @@ def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200):
     train_accs = []
     val_accs = []
 
-    best_val_loss, best_val_acc = float('inf'), 0
+    best_val_loss, best_acc = float('inf'), 0
 
     start = time.time()
     for epoch in range(num_epochs+1):
@@ -89,7 +89,7 @@ def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200):
         val_acc = test(val_loader)
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            best_val_acc = val_acc
+            best_acc = val_acc
         if epoch % 10 == 0:
             train_losses.append(train_loss)
             val_losses.append(val_loss)
@@ -97,15 +97,19 @@ def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200):
             train_accs.append(train_acc)
             print(f'Epoch: {epoch:03d} ({timeSince(start)}), Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}')
 
-    print(f'Best validation loss on {dataset_name}: {best_val_loss:.4f} with the accuracy: {best_val_acc:.4f}\n')
+    print(f'Best validation loss on {dataset_name}: {best_val_loss:.4f} with the accuracy: {best_acc:.4f}\n')
+    
     # Plot results
     netParams = NetParams(hidden_channels, num_epochs, batch_size)
     plot_training_results(dataset_name, netParams, train_accs, val_accs, train_losses, val_losses)
 
-if __name__ == '__main__':
-    hidden_channels = 64
-    batch_size = 64
-    num_epochs = 200
-    dataset_name = 'Peking_1'
+    return best_val_loss, best_acc
 
-    run(dataset_name, hidden_channels, num_epochs, batch_size)
+if __name__ == '__main__':
+
+    HIDDEN_CHANNELS = 64
+    NUM_EPOCHS = 200
+    BATCH_SIZE = 64
+    DATASET_NAME = 'PROTEINS'
+
+    best_val_loss, best_acc = run(DATASET_NAME, HIDDEN_CHANNELS, NUM_EPOCHS, BATCH_SIZE)
