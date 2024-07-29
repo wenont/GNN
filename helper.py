@@ -52,4 +52,9 @@ def plot_training_results(dataset_name: str, netParams: NetParams, train_accs, v
             f'HIDDEN_CHANNELS={netParams.hidden_channels}, BATCH_SIZE={netParams.batch_size}', 
             horizontalalignment='right', fontsize='xx-small', c='gray')
     plt.savefig(f'./results/result_{dataset_name}.pdf')
-    # plt.show()
+    plt.show()
+
+
+def get_dataloader(dataset, batch_size=32):
+    from torch_geometric.data import DataLoader
+    return DataLoader(dataset, batch_size=batch_size, shuffle=True)
