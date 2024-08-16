@@ -5,7 +5,7 @@ from helper import timeSince, plot_training_results, NetParams
 from net import GCN
 import time
 
-# TODO: add test dataset and test dataloader
+
 def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200, split=False):
     # Load dataset
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
@@ -131,24 +131,25 @@ def run(dataset_name, hidden_channels=64, num_epochs=64, batch_size=200, split=F
                       f'Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}')
         acc.append(test_acc)
         print(f'Best validation loss on {dataset_name}: {best_val_loss:.4f} with the accuracy: {best_acc:.4f} in the round {i+1}\n')
+
+        # Plot results
+        # netParams = NetParams(hidden_channels, num_epochs, batch_size)
+        # plot_training_results(dataset_name, netParams, train_accs, val_accs, train_losses, val_losses)
     
     acc = torch.tensor(acc)
 
     print('---------------- Final Result ----------------')
     print('Mean: {:7f}, Std: {:7f}'.format(acc.mean(), acc.std()))
 
-    # Plot results
-    # netParams = NetParams(hidden_channels, num_epochs, batch_size)
-    # plot_training_results(dataset_name, netParams, train_accs, val_accs, train_losses, val_losses)
 
-    return best_val_loss, best_acc
+    return acc.mean()
 
 if __name__ == '__main__':
 
     HIDDEN_CHANNELS = 64
-    MAX_NUM_EPOCHS = 100
+    MAX_NUM_EPOCHS = 200
     BATCH_SIZE = 64
-    DATASET_NAME = 'PROTEINS'
+    DATASET_NAME = 'Synthie'
     
 
-    best_val_loss, best_acc = run(DATASET_NAME, HIDDEN_CHANNELS, MAX_NUM_EPOCHS, BATCH_SIZE)
+    acc = run(DATASET_NAME, HIDDEN_CHANNELS, MAX_NUM_EPOCHS, BATCH_SIZE)
