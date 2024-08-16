@@ -1,8 +1,13 @@
 import matplotlib.pyplot as plt
+from torch_geometric.utils.convert import to_networkx
+from torch_geometric.utils import degree
 import networkx as nx
 import time
 import math
 from dataclasses import dataclass
+from torch_geometric.datasets import TUDataset
+from tqdm import tqdm
+
 
 
 def visualize_graph(G, color):
@@ -54,7 +59,32 @@ def plot_training_results(dataset_name: str, netParams: NetParams, train_accs, v
     plt.savefig(f'./results/result_{dataset_name}.pdf')
     plt.show()
 
+def get_average_degree(dataset_name):
+    dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
+    degs = []
 
-def get_dataloader(dataset, batch_size=32):
-    from torch_geometric.data import DataLoader
-    return DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    for data in tqdm(dataset):
+        deg = degree(data.edge_index[0], data.num_nodes)
+        degs.append(deg.mean().item())    
+
+    return sum(degs) / len(degs)
+
+def get_average_shortest_path(dataset_name, show_errors=False):
+    dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
+    avg_shortest_paths = []
+
+    num_errors = 0
+
+    for data in tqdm(dataset):
+        G = to_networkx(data)
+        try:
+            avg_shortest_paths.append(nx.average_shortest_path_length(G))
+        except:
+            num_errors += 1
+            continue
+    if show_errors:
+        print(f'Number of errors: {num_errors}')
+        print(f'Error rate: {num_errors / len(dataset)}')
+            
+    return sum(avg_shortest_paths) / len(avg_shortest_paths)
+
