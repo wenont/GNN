@@ -30,3 +30,7 @@ class GCN(torch.nn.Module):
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.fc2(x)
         return x
+    
+    def reset_parameters(self):
+        for (_, module) in self._modules.items():
+            module.reset_parameters()
