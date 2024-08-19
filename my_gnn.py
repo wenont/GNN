@@ -1,7 +1,7 @@
 import torch
 from torch_geometric.datasets import TUDataset
 from torch_geometric.loader import DataLoader
-from helper import timeSince, plot_training_results, NetParams
+from utils import timeSince, plot_training_results, NetParams
 from net import GCN
 import time
 
@@ -37,7 +37,6 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
         hidden_channels=hidden_channels,
         out_channels=dataset.num_classes,
     ).to(device)
-    # print(f'Model structure: {model}\n\n')
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -49,7 +48,7 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.batch)
-            loss = criterion(out, data.y)
+            loss = criterion(out, data.y.long())
             loss.backward()
             loss_all += loss.item() * data.num_graphs
             optimizer.step()
@@ -63,7 +62,7 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
         for data in loader:
             data = data.to(device)
             out = model(data.x, data.edge_index, data.batch)
-            loss = criterion(out, data.y)
+            loss = criterion(out, data.y.long())
             loss_all += loss.item() * data.num_graphs
         return loss_all/len(loader.dataset)
     
@@ -139,7 +138,7 @@ def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=F
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.batch)
-            loss = criterion(out, data.y)
+            loss = criterion(out, data.y.long())
             loss.backward()
             loss_all += loss.item() * data.num_graphs
             optimizer.step()
@@ -153,7 +152,7 @@ def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=F
         for data in loader:
             data = data.to(device)
             out = model(data.x, data.edge_index, data.batch)
-            loss = criterion(out, data.y)
+            loss = criterion(out, data.y.long())
             loss_all += loss.item() * data.num_graphs
         return loss_all/len(loader.dataset)
     
@@ -193,17 +192,6 @@ def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=F
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-
-        # train_dataset_size = int(len(dataset) * 0.8)
-        # train_dataset = dataset[:train_dataset_size]
-        # val_dataset = dataset[train_dataset_size:]
-
-        # train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        # val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-
-        # centered_line = f'Dataset: {dataset}'.center(93)
-        # print('=' * 93 + f'\n{centered_line}\n' + '=' * 93 + '\n')
-
 
         val_loss = val(val_loader)
         val_acc = test(val_loader)
@@ -255,7 +243,8 @@ if __name__ == '__main__':
     HIDDEN_CHANNELS = 64
     MAX_NUM_EPOCHS = 200
     BATCH_SIZE = 64
-    DATASET_NAME = 'SYNTHETIC'
+    # DATASET_NAME = 'DD'
+    DATASET_NAME = 'COLORS-3'
     
 
-    get_training_result(DATASET_NAME)
+    run(DATASET_NAME)
