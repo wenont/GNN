@@ -1,0 +1,8 @@
+,Name,Ave. generalization  error
+0,FRANKENSTEIN,tensor(-0.0015)
+1,NCI1,tensor(0.0479)
+2,COIL-RAG,tensor(-0.0043)
+3,Letter-high,tensor(0.0513)
+4,DD,tensor(0.1483)
+5,PROTEINS_full,tensor(-0.0213)
+6,COLORS-3,tensor(0.0090)
