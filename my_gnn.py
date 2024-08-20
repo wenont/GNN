@@ -16,26 +16,42 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
     """
     
     # Define dataset
-    dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
-    dataset = dataset.shuffle()
-    centered_line = f'Dataset: {dataset}'.center(93)
-    print('=' * 93 + f'\n{centered_line}\n' + '=' * 93 + '\n')
+    dataset_num_features = int()
+    dataset_num_classes = int()
+    if 'tox21' not in dataset_name.lower(): # by default
+        dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
+        dataset = dataset.shuffle()
+        centered_line = f'Dataset: {dataset}'.center(93)
+        print('=' * 93 + f'\n{centered_line}\n' + '=' * 93 + '\n')
 
 
-    train_dataset_size = int(len(dataset) * 0.8)
-    train_dataset = dataset[:train_dataset_size]
-    val_dataset = dataset[train_dataset_size:]
+        train_dataset_size = int(len(dataset) * 0.8)
+        train_dataset = dataset[:train_dataset_size]
+        val_dataset = dataset[train_dataset_size:]
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+        dataset_num_features = dataset.num_features
+        dataset_num_classes = dataset.num_classes
+    else:
+        train_dataset = TUDataset(root='data/TUDataset', name=dataset_name+'_training', use_node_attr=True)
+        val_dataset = TUDataset(root='data/TUDataset', name=dataset_name+'_evaluation', use_node_attr=True)
+        test_dataset = TUDataset(root='data/TUDataset', name=dataset_name+'_testing', use_node_attr=True)
+
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+        dataset_num_features = train_dataset.num_features
+        dataset_num_classes = train_dataset.num_classes
 
     # Define model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}')
     model = GCN(
-        in_channels=dataset.num_features,
+        in_channels=dataset_num_features,
         hidden_channels=hidden_channels,
-        out_channels=dataset.num_classes,
+        out_channels=dataset_num_classes,
     ).to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -111,7 +127,7 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
     plot_training_results(dataset_name, netParams, train_accs, val_accs, train_losses, val_losses)
 
 
-def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=False):
+def get_generalization_error(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=False):
     # Load dataset
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     dataset = dataset.shuffle()
@@ -167,7 +183,8 @@ def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=F
         return correct / len(loader.dataset)
     
 
-    acc = []
+    best_test_accuracy_list = []
+    best_train_accuracy_list = []
     for i in range(10):
         model.reset_parameters()
         print(f'Run {i+1}')
@@ -203,7 +220,7 @@ def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=F
         train_accs = []
         val_accs = []
 
-        best_val_loss, best_acc = float('inf'), 0
+        best_val_loss, best_test_acc, best_train_acc = float('inf'), 0, 0
 
         start = time.time()
         for epoch in range(num_epochs+1):
@@ -215,7 +232,8 @@ def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=F
             if val_loss < best_val_loss:
                 test_acc = test(test_loader)
                 best_val_loss = val_loss
-                best_acc = val_acc
+                best_test_acc = test_acc
+                best_train_acc = train_acc
             if epoch % 10 == 0:
                 train_losses.append(train_loss)
                 val_losses.append(val_loss)
@@ -223,20 +241,22 @@ def run(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=F
                 train_accs.append(train_acc)
                 print(f'Epoch: {epoch:03d} ({timeSince(start)}), Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, '
                       f'Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}')
-        acc.append(test_acc)
-        print(f'Best validation loss on {dataset_name}: {best_val_loss:.4f} with the accuracy: {best_acc:.4f} in the round {i+1}\n')
+        best_test_accuracy_list.append(test_acc)
+        best_train_accuracy_list.append(train_acc)
+        print(f'Best validation loss on {dataset_name}: {best_val_loss:.4f} with the test accuracy: {best_test_acc:.4f} in the round {i+1}\n')
 
         # Plot results
         # netParams = NetParams(hidden_channels, num_epochs, batch_size)
         # plot_training_results(dataset_name, netParams, train_accs, val_accs, train_losses, val_losses)
     
-    acc = torch.tensor(acc)
+    best_test_accuracy_list = torch.tensor(best_test_accuracy_list)
+    best_train_accuracy_list = torch.tensor(best_train_accuracy_list)
 
     print('---------------- Final Result ----------------')
-    print('Mean: {:7f}, Std: {:7f}'.format(acc.mean(), acc.std()))
+    print('Mean: {:7f}, Std: {:7f}'.format(best_test_accuracy_list.mean(), best_test_accuracy_list.std()))
 
 
-    return acc.mean()
+    return sum([train_acc - test_acc for train_acc, test_acc in zip(best_train_accuracy_list, best_test_accuracy_list)]) / 10
 
 if __name__ == '__main__':
 
@@ -244,7 +264,7 @@ if __name__ == '__main__':
     MAX_NUM_EPOCHS = 200
     BATCH_SIZE = 64
     # DATASET_NAME = 'DD'
-    DATASET_NAME = 'COLORS-3'
+    DATASET_NAME = 'OHSU'
     
-
-    run(DATASET_NAME)
+    print(DATASET_NAME)
+    print(get_generalization_error(DATASET_NAME))
