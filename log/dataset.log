@@ -1,0 +1,105 @@
++----+-------------+----------+---------------------+
+|    | Name        |   Graphs |   Num. node feature |
+|----+-------------+----------+---------------------|
+|  0 | COIL-DEL    |     3900 |                   2 |
+|  1 | COIL-RAG    |     3900 |                  64 |
+|  2 | Cuneiform   |      267 |                  10 |
+|  3 | Fingerprint |     2800 |                   2 |
+|  4 | FIRSTMM_DB  |       41 |                   6 |
+|  5 | Letter-high |     2250 |                   2 |
+|  6 | Letter-low  |     2250 |                   2 |
+|  7 | Letter-med  |     2250 |                   2 |
+|  8 | MSRC_9      |      221 |                  10 |
+|  9 | MSRC_21     |      563 |                  24 |
+| 10 | MSRC_21C    |      209 |                  22 |
++----+-------------+----------+---------------------+
++----+---------------+----------+---------------------+
+|    | Name          |   Graphs |   Num. node feature |
+|----+---------------+----------+---------------------|
+|  0 | DD            |     1178 |                  89 |
+|  1 | ENZYMES       |      600 |                  21 |
+|  2 | KKI           |       83 |                 190 |
+|  3 | OHSU          |       79 |                 190 |
+|  4 | Peking_1      |       85 |                 190 |
+|  5 | PROTEINS      |     1113 |                   4 |
+|  6 | PROTEINS_full |     1113 |                  32 |
++----+---------------+----------+---------------------+
++----+-----------------------------+----------+---------------------+
+|    | Name                        |   Graphs |   Num. node feature |
+|----+-----------------------------+----------+---------------------|
+|  0 | AIDS                        |     2000 |                  42 |
+|  1 | BZR                         |      405 |                  56 |
+|  2 | BZR_MD                      |      306 |                   8 |
+|  3 | COX2                        |      467 |                  38 |
+|  4 | COX2_MD                     |      303 |                   7 |
+|  5 | DHFR                        |      756 |                  56 |
+|  6 | DHFR_MD                     |      393 |                   7 |
+|  7 | ER_MD                       |      446 |                  10 |
+|  8 | FRANKENSTEIN                |     4337 |                 780 |
+|  9 | MCF-7                       |    27770 |                  46 |
+| 10 | MCF-7H                      |    27770 |                  47 |
+| 11 | MOLT-4                      |    39765 |                  64 |
+| 12 | MOLT-4H                     |    39765 |                  65 |
+| 13 | Mutagenicity                |     4337 |                  14 |
+| 14 | MUTAG                       |      188 |                   7 |
+| 15 | NCI1                        |     4110 |                  37 |
+| 16 | NCI109                      |     4127 |                  38 |
+| 17 | NCI-H23                     |    40353 |                  65 |
+| 18 | NCI-H23H                    |    40353 |                  66 |
+| 19 | OVCAR-8                     |    40516 |                  65 |
+| 20 | OVCAR-8H                    |    40516 |                  66 |
+| 21 | P388                        |    41472 |                  72 |
+| 22 | P388H                       |    41472 |                  73 |
+| 23 | PC-3                        |    27509 |                  45 |
+| 24 | PC-3H                       |    27509 |                  46 |
+| 25 | PTC_FM                      |      349 |                  18 |
+| 26 | PTC_FR                      |      351 |                  19 |
+| 27 | PTC_MM                      |      336 |                  20 |
+| 28 | PTC_MR                      |      344 |                  18 |
+| 29 | SF-295                      |    40271 |                  65 |
+| 30 | SF-295H                     |    40271 |                  66 |
+| 31 | SN12C                       |    40004 |                  65 |
+| 32 | SN12CH                      |    40004 |                  66 |
+| 33 | SW-620                      |    40532 |                  65 |
+| 34 | SW-620H                     |    40532 |                  66 |
+| 35 | Tox21_AhR_training          |     8169 |                  50 |
+| 36 | Tox21_AhR_testing           |      272 |                  51 |
+| 37 | Tox21_AhR_evaluation        |      607 |                  53 |
+| 38 | Tox21_AR_training           |     9362 |                  50 |
+| 39 | Tox21_AR_testing            |      292 |                  51 |
+| 40 | Tox21_AR_evaluation         |      585 |                  53 |
+| 41 | Tox21_AR-LBD_training       |     8599 |                  50 |
+| 42 | Tox21_AR-LBD_testing        |      253 |                  51 |
+| 43 | Tox21_AR-LBD_evaluation     |      580 |                  53 |
+| 44 | Tox21_ARE_training          |     7167 |                  54 |
+| 45 | Tox21_ARE_testing           |      234 |                  51 |
+| 46 | Tox21_ARE_evaluation        |      552 |                  53 |
+| 47 | Tox21_aromatase_training    |     7226 |                  50 |
+| 48 | Tox21_aromatase_testing     |      214 |                  51 |
+| 49 | Tox21_aromatase_evaluation  |      528 |                  53 |
+| 50 | Tox21_ATAD5_training        |     9091 |                  50 |
+| 51 | Tox21_ATAD5_testing         |      272 |                  51 |
+| 52 | Tox21_ATAD5_evaluation      |      619 |                  53 |
+| 53 | Tox21_ER_training           |     7697 |                  50 |
+| 54 | Tox21_ER_testing            |      265 |                  51 |
+| 55 | Tox21_ER_evaluation         |      515 |                  53 |
+| 56 | Tox21_ER-LBD_training       |     8753 |                  50 |
+| 57 | Tox21_ER-LBD_testing        |      287 |                  51 |
+| 58 | Tox21_ER-LBD_evaluation     |      599 |                  53 |
+| 59 | Tox21_HSE_training          |     8150 |                  54 |
+| 60 | Tox21_HSE_testing           |      267 |                  51 |
+| 61 | Tox21_HSE_evaluation        |      607 |                  53 |
+| 62 | Tox21_MMP_training          |     7320 |                  50 |
+| 63 | Tox21_MMP_testing           |      238 |                  51 |
+| 64 | Tox21_MMP_evaluation        |      541 |                  53 |
+| 65 | Tox21_p53_training          |     8634 |                  50 |
+| 66 | Tox21_p53_testing           |      269 |                  51 |
+| 67 | Tox21_p53_evaluation        |      613 |                  53 |
+| 68 | Tox21_PPAR-gamma_training   |     8184 |                  50 |
+| 69 | Tox21_PPAR-gamma_testing    |      267 |                  51 |
+| 70 | Tox21_PPAR-gamma_evaluation |      602 |                  53 |
+| 71 | UACC257                     |    39988 |                  64 |
+| 72 | UACC257H                    |    39988 |                  65 |
+| 73 | Yeast                       |    79601 |                  74 |
+| 74 | YeastH                      |    79601 |                  75 |
++----+-----------------------------+----------+---------------------+
