@@ -66,7 +66,7 @@ def get_average_degree(dataset_name):
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     degs = []
 
-    for data in tqdm(dataset):
+    for data in dataset:
         deg = degree(data.edge_index[0], data.num_nodes)
         degs.append(deg.mean().item())    
 
@@ -78,7 +78,7 @@ def get_average_shortest_path(dataset_name, show_errors=False):
 
     num_errors = 0
 
-    for data in tqdm(dataset):
+    for data in dataset:
         G = to_networkx(data)
         try:
             avg_shortest_paths.append(nx.average_shortest_path_length(G))
