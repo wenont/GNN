@@ -1,3 +1,14 @@
 data/
 __pycache__/
 playground/
+
+# latex
+*.sty
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+main.log
