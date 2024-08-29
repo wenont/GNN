@@ -13,3 +13,5 @@ playground/
 *.toc
 main.log
 main.pdf
+
+.DS_Store
