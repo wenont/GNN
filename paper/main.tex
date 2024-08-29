@@ -1,0 +1,83 @@
+\documentclass{article}
+
+\usepackage{blindtext}
+\usepackage[square,numbers]{natbib}
+\usepackage[nottoc]{tocbibind}
+
+
+
+\title{\textbf{Proposal for bachelor thesis}\\
+Exploration of the influence of graph parameters on the generalization error of Graph Neural Networks}
+
+\author{Author: Wensheng Zhang}
+
+\date{\today}
+
+\begin{document} 
+
+\maketitle
+
+\tableofcontents
+
+
+\begin{abstract}
+The goal of the bachelor thesis is to understand empirically how graph parameters/characteristics influence the generalization error of GNNs. 
+\end{abstract}
+
+
+\section{Setup}
+
+In following, I will descripe datasets, models and training framework for the setup of the experiment.
+
+\subsection{Datasets}
+The dataset used in the experiment is TUDataset~\cite{morris_tudataset_2020}. Since the size of some datasets are quiet small (under 500 data points/graphs), I use 10-fold cross validation in the training process, in order to fully utilize the data. One of the folds is treated as test dataset and another fold is treated as validation dataset. The rest of the folds are used for training. 
+
+\subsection{Models}
+I have used GCN layer and GAT layer in the experiment. In the futher experiment, I will consider to use other GNN layers.
+
+
+\section{Experiment}
+The experiment consists in three steps: 1. Train the models from datasets adn valuate the models to calculate the generalization error. 2. calculate the parameters of the graphs from the dataset. 3. Analyze the influence of the graph parameters on the generalization error of the GNNs.
+
+
+
+\section{Introduction}
+\blindtext
+
+\section{Theoretical Framework}
+
+\blindtext
+
+\section{Objective}
+
+\blindtext
+
+\section{Justification}
+
+\blindtext
+
+\section{Development}
+
+\blindtext
+
+
+\section{Solution}
+
+\blindtext
+
+\section{Conclusion}
+
+\blindtext
+
+
+\bibliographystyle{abbrvnat} % or another style like unsrt, alpha, etc.
+\bibliography{bibliography}
+
+% All reduce Graphs
+\newpage 
+    \section{Appendix} 
+ 
+\blindtext
+
+
+\end{document}
