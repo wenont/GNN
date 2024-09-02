@@ -43,7 +43,6 @@ class GAT(torch.nn.Module):
         self.conv2 = GATConv(hidden_channels, hidden_channels)
         self.conv3 = GATConv(hidden_channels, hidden_channels)
         self.conv4 = GATConv(hidden_channels, hidden_channels)
-        self.conv5 = GATConv(hidden_channels, hidden_channels)
         
         self.fc1 = nn.Linear(hidden_channels, hidden_channels)
         self.fc2 = nn.Linear(hidden_channels, out_channels)
@@ -55,7 +54,6 @@ class GAT(torch.nn.Module):
         x = self.conv2(x, edge_index, edge_weight).relu()
         x = self.conv3(x, edge_index, edge_weight).relu()
         x = self.conv4(x, edge_index, edge_weight).relu()
-        x = self.conv5(x, edge_index, edge_weight).relu()
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
         x = self.fc1(x).relu()
         x = F.dropout(x, p=0.5, training=self.training)
