@@ -1,5 +1,12 @@
 \documentclass{article}
-\usepackage[margin=1.5in]{geometry}
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    left=30mm,
+    right=30mm,
+    top=20mm,
+    bottom=20mm
+}
 
 
 \usepackage{blindtext}
@@ -78,11 +85,21 @@ Exploration of the influence of graph parameters on the generalization error of 
 
 
 \begin{abstract}
-The goal of the bachelor thesis is to understand empirically how graph parameters/characteristics influence the generalization error of Graph Neural Networks (GNNs).
+The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics influence the generalization error of Graph Neural Networks (GNNs).
 \end{abstract}
 
 
-\section{Setup}
+\section{Introduction}
+
+What is graph parameters? Graph parameters are the properties of the graph, which can be calculated from the graph. For example, the average degree of the graph, the average shortest path of the graph, the average number of coloring in the 1-WL algorithm, etc. In the early experiment, the graph parameters are calculated as the average degree and the average shortest path of the graphs.
+\\
+In the another hand, the generalization error is a measure of how well the model generalizes to unseen data. In the experiment, the generalization error is calculated as the difference between the training accuracy and the test accuracy.
+\\
+Why is it important to understand the influence of graph parameters on the generalization error of GNNs? The understanding of the influence of graph parameters on the generalization error of GNNs can help us to understand the behavior of GNNs. For example, if we know that the average degree of the graph has a significant influence on the generalization error of GNNs, we can design GNNs that are more robust to the average degree of the graph.
+
+
+
+\section{Setup in the early experiment}
 In following, I will descripe training framework, datasets and models for the setup of the experiment.
 
 \subsection{Training Framework}
@@ -92,7 +109,7 @@ The training framework is based on PyTorch Geometric~\cite{fey2019fast}. PyTorch
 The dataset in the experiment is TUDataset~\cite{morris_tudataset_2020}. TUDataset is often used for the GNN evaluation. It consists data across different domains, including small molecules, bioinformatics, social networks and synthetic. Since the size of some datasets are quiet small (under 500 data points/graphs), I use 10-fold cross validation in the training process, in order to fully utilize the data. A dataset is splited into 1:1:8, inwhich one of the folds is treated as test dataset and another is treated as validation dataset. The rest of the folds are used for training. 
 
 \subsection{Models}
-I have used GCN layer~\cite{kipf2017semisupervised} and GAT layer~\cite{velickovic2020pointer} in the experiment. In the futher experiment, I will consider to use other GNN layers. In the Appendix, I will provide the code of the example models.
+In the early experiment, I have used GCN layer~\cite{kipf2017semisupervised} and GAT layer~\cite{velickovic2020pointer}. To prevent overfitting, dropout is used in the model. Relu is used as activation function. In the Appendix, I have provided the code of example models.
 
 
 \section{Experiment}
@@ -100,6 +117,7 @@ I have used GCN layer~\cite{kipf2017semisupervised} and GAT layer~\cite{velickov
 
 
 \begin{figure}[h]
+    \centering
     \includegraphics[width=0.5\textwidth]{experiment_procedure.pdf}
     \caption{A illutration of experiment Procedure}
     \label{fig:experiment}
@@ -107,16 +125,21 @@ I have used GCN layer~\cite{kipf2017semisupervised} and GAT layer~\cite{velickov
 
 The experiment consists in three parts: 1. Train the models from datasets and evaluate the models to calculate the generalization error. 2. calculate the parameters of the graphs from the dataset. 3. Analyze the influence of the graph parameters on the generalization error of the GNNs. (See Figure~\ref{fig:experiment})
 
-Here I take seven datasets from TUDataset as examples. The calculated parameters are shown in Table~\ref{tab:parameter}. The generalization error of the models are shown in Table~\ref{tab:error}.
 
+\subsection{Experimental details in the early stage}
+I use Adam optimizer with learning rate 0.01. The batch size is set to 64. The hidden dimension of the GNN layer is set to 64. The number of epochs is set to 200. To prevent overfitting and to save time, the early stopping is used with patience 20. The loss function is set to CrossEntropyLoss. 
 
-\begin{table}[]
+\section{Results}
+
+Here I take seven datasets from TUDataset as examples. The calculated parameters are shown in Table~\ref{tab:parameter}. The generalization error of the models are shown in Table~\ref{tab:error}. 
+
+\begin{table}[h!]
     \centering
     \begin{tabular}{@{}lll@{}}
     \toprule
     \multicolumn{1}{c}{\multirow{2}{*}{Dataset}} & \multicolumn{2}{c}{Parameter}                                            \\ \cmidrule(l){2-3} 
     \multicolumn{1}{c}{}                         & \multicolumn{1}{c}{Ave. degree} & \multicolumn{1}{c}{Ave. shortest path} \\ \midrule
-    FRANKENSTEIN                                 & 2.0627         & 3.6521                     \\
+    Mutagenicity                                 & 2.0379         & 4.4825                     \\
     NCI1                                         & 2.1550         & 5.4697                     \\
     COIL-RAG                                     & 1.8277         & 1.0606                     \\
     Letter-high                                  & 1.8896         & 1.5173                     \\
@@ -128,7 +151,35 @@ Here I take seven datasets from TUDataset as examples. The calculated parameters
     \label{tab:parameter}
 \end{table}
 
-\newpage 
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{@{}lll@{}}
+    \toprule
+    Dataset        & Ave. generalization error & Standard Deviation   \\ \midrule
+    Mutagenicity   & 0.0268      & 0.02335 \\
+    NCI1           & 0.0138      & 0.02649 \\
+    COIL-RAG       & 0.0450      & 0.01378 \\
+    Letter-high    & 0.0403      & 0.04342 \\
+    DD             & 0.0524      & 0.05849 \\
+    PROTEINS\_full & 0.0189      & 0.05032 \\
+    COLORS-3       & 0.0076      & 0.01428 \\ \bottomrule
+    \end{tabular}
+    \caption{The calculated generalization error from a set of datasets}
+    \label{tab:error}
+\end{table}
+
+Then I plot the generalization error against the graph parameters. The result is shown in Figure~\ref{fig:scatter}.
+
+\begin{figure}[h!]
+    \includegraphics[width=\textwidth]{final_results.png}
+    \caption{The generalization error against the graph parameters}
+    \label{fig:scatter}
+\end{figure}
+
+\section{In the further work}
+In the future, I plan to explore different GNN layers and datasets to evaluate the consistency of the results. Additionally, I will consider experimenting with various graph parameters. In \cite{gera2018annotated}, the authors have proposed a set of graph parameters that can be used to characterize the graph. I will use these parameters in the future work.
+
+\newpage
 
 \bibliographystyle{abbrvnat} % or another style like unsrt, alpha, etc.
 \bibliography{bibliography} % refers to example.bib
@@ -155,7 +206,6 @@ class GCN(torch.nn.Module):
         self.conv2 = GCNConv(hidden_channels, hidden_channels)
         self.conv3 = GCNConv(hidden_channels, hidden_channels)
         self.conv4 = GCNConv(hidden_channels, hidden_channels)
-        self.conv5 = GCNConv(hidden_channels, hidden_channels)
         self.fc1 = nn.Linear(hidden_channels, hidden_channels)
         self.fc2 = nn.Linear(hidden_channels, out_channels)
 
@@ -165,7 +215,6 @@ class GCN(torch.nn.Module):
         x = self.conv2(x, edge_index, edge_weight).relu()
         x = self.conv3(x, edge_index, edge_weight).relu()
         x = self.conv4(x, edge_index, edge_weight).relu()
-        x = self.conv5(x, edge_index, edge_weight).relu()
         x = global_mean_pool(x, batch)
         x = self.fc1(x).relu()
         x = F.dropout(x, p=0.5, training=self.training)
