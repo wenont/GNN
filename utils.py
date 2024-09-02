@@ -91,3 +91,22 @@ def get_average_shortest_path(dataset_name, show_errors=False):
             
     return sum(avg_shortest_paths) / len(avg_shortest_paths)
 
+def read_file_to_list(file_path):
+    """
+    Reads the content from a text file and converts it to a list.
+
+    Args:
+        file_path (str): Path to the text file.
+
+    Returns:
+        list: List of strings, where each string is a line from the file.
+    """
+    try:
+        with open(file_path, 'r') as file:
+            content = file.readlines()
+            # Remove newline characters from each line
+            content = [line.strip() for line in content]
+            return content
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return []
