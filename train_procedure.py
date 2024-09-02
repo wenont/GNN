@@ -56,7 +56,7 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
 
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-
+    
     def train(loader):
         model.train()
         loss_all = 0
@@ -127,7 +127,7 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
     plot_training_results(dataset_name, netParams, train_accs, val_accs, train_losses, val_losses)
 
 
-def get_generalization_error(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=False):
+def get_generalization_error_from_a_dataset(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=False):
     # Load dataset
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     dataset = dataset.shuffle()
@@ -187,8 +187,9 @@ def get_generalization_error(dataset_name, hidden_channels=64, num_epochs=200, b
     best_train_accuracy_list = []
     for i in range(10):
         model.reset_parameters()
-        print(f'Run {i+1}')
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.7, patience=5, min_lr=0.0001)
+        print(f'Run {i+1}')
 
         test_mask = torch.zeros(len(dataset), dtype=torch.bool)
 
@@ -223,17 +224,24 @@ def get_generalization_error(dataset_name, hidden_channels=64, num_epochs=200, b
         best_val_loss, best_test_acc, best_train_acc = float('inf'), 0, 0
 
         start = time.time()
+        patience = 20
         for epoch in range(num_epochs+1):
             train_loss = train(train_loader)
             val_loss = val(val_loader)
             train_acc = test(train_loader)
             val_acc = test(val_loader)
+            scheduler.step(val_loss)
 
             if val_loss < best_val_loss:
                 test_acc = test(test_loader)
                 best_val_loss = val_loss
                 best_test_acc = test_acc
                 best_train_acc = train_acc
+                patience = 20
+            else:
+                patience -= 1
+                if patience == 0:
+                    break
             if epoch % 10 == 0:
                 train_losses.append(train_loss)
                 val_losses.append(val_loss)
@@ -241,8 +249,8 @@ def get_generalization_error(dataset_name, hidden_channels=64, num_epochs=200, b
                 train_accs.append(train_acc)
                 print(f'Epoch: {epoch:03d} ({timeSince(start)}), Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, '
                       f'Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}')
-        best_test_accuracy_list.append(test_acc)
-        best_train_accuracy_list.append(train_acc)
+        best_test_accuracy_list.append(best_test_acc)
+        best_train_accuracy_list.append(best_train_acc)
         print(f'Best validation loss on {dataset_name}: {best_val_loss:.4f} with the test accuracy: {best_test_acc:.4f} in the round {i+1}\n')
 
         # Plot results
@@ -252,11 +260,13 @@ def get_generalization_error(dataset_name, hidden_channels=64, num_epochs=200, b
     best_test_accuracy_list = torch.tensor(best_test_accuracy_list)
     best_train_accuracy_list = torch.tensor(best_train_accuracy_list)
 
+    generation_errors = best_train_accuracy_list - best_test_accuracy_list
+
     print('---------------- Final Result ----------------')
-    print('Mean: {:7f}, Std: {:7f}'.format(best_test_accuracy_list.mean(), best_test_accuracy_list.std()))
+    print('Mean: {:7f}, Std: {:7f}'.format(generation_errors.mean(), generation_errors.std()))
 
 
-    return sum([train_acc - test_acc for train_acc, test_acc in zip(best_train_accuracy_list, best_test_accuracy_list)]) / 10
+    return generation_errors.mean().item() , generation_errors.std().item()
 
 if __name__ == '__main__':
 
@@ -264,7 +274,7 @@ if __name__ == '__main__':
     MAX_NUM_EPOCHS = 200
     BATCH_SIZE = 64
     # DATASET_NAME = 'DD'
-    DATASET_NAME = 'OHSU'
+    DATASET_NAME = 'Mutagenicity'
     
     print(DATASET_NAME)
-    print(get_generalization_error(DATASET_NAME))
+    print(get_generalization_error_from_a_dataset(DATASET_NAME))
