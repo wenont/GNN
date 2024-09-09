@@ -20,6 +20,8 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 
+\usepackage{amssymb}
+
 
 
 \usepackage{tikz}
@@ -91,7 +93,12 @@ The goal of this bachelor thesis is to understand empirically how graph paramete
 
 \section{Introduction}
 
-What is graph parameters? Graph parameters are the properties of the graph, which can be calculated from the graph. For example, the average degree of the graph, the average shortest path of the graph, the average number of coloring in the 1-WL algorithm, etc. In the early experiment, the graph parameters are calculated as the average degree and the average shortest path of the graphs.
+Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs) are a class of neural networks that can operate on graph-structured data. GNNs have been shown to be effective in a wide range of tasks, such as node classification, link prediction, and graph classification. However, the behavior of GNNs is not well understood. In particular, it is not clear how the graph parameters/characteristics influence the generalization error of GNNs. The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics influence the generalization error of GNNs. 
+\\
+
+What is a graph parameter?  A Graph parameter is a function $f: \mathbb{G} \Rightarrow \mathbb{R}$, which maps a graph to a real number. For example, the average degree of the graph, the average shortest path of the graph, the average number of coloring in the 1-WL algorithm, etc. In the early experiment, the graph parameters are calculated as the average degree and the average shortest path of the graphs.
+\\
+
 \\
 In the another hand, the generalization error is a measure of how well the model generalizes to unseen data. In the experiment, the generalization error is calculated as the difference between the training accuracy and the test accuracy.
 \\
