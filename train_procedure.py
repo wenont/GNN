@@ -126,7 +126,6 @@ def get_training_result(dataset_name, hidden_channels=64, num_epochs=200, batch_
     netParams = NetParams(hidden_channels, num_epochs, batch_size)
     plot_training_results(dataset_name, netParams, train_accs, val_accs, train_losses, val_losses)
 
-
 def get_generalization_error_from_a_dataset(dataset_name, hidden_channels=64, num_epochs=200, batch_size=64, split=False):
     # Load dataset
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
@@ -137,13 +136,11 @@ def get_generalization_error_from_a_dataset(dataset_name, hidden_channels=64, nu
 
     # Define model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # print(device)
     model = GCN(
         in_channels=dataset.num_features,
         hidden_channels=hidden_channels,
         out_channels=dataset.num_classes,
     ).to(device)
-    # print(f'Model structure: {model}\n\n')
 
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -270,11 +267,13 @@ def get_generalization_error_from_a_dataset(dataset_name, hidden_channels=64, nu
 
 if __name__ == '__main__':
 
-    HIDDEN_CHANNELS = 64
-    MAX_NUM_EPOCHS = 200
-    BATCH_SIZE = 64
-    # DATASET_NAME = 'DD'
-    DATASET_NAME = 'Mutagenicity'
+    # HIDDEN_CHANNELS = 64
+    # MAX_NUM_EPOCHS = 200
+    # BATCH_SIZE = 64
+    # # DATASET_NAME = 'DD'
+    # DATASET_NAME = 'Mutagenicity'
     
-    print(DATASET_NAME)
-    print(get_generalization_error_from_a_dataset(DATASET_NAME))
+    # print(DATASET_NAME)
+    # print(get_generalization_error_from_a_dataset(DATASET_NAME))
+
+    get_training_result('IMDB-BINARY')
