@@ -4,12 +4,11 @@
     a4paper,
     left=30mm,
     right=30mm,
-    top=20mm,
-    bottom=20mm
+    top=30mm,
+    bottom=30mm
 }
 
-
-\usepackage{blindtext}
+\usepackage{annotate-equations}
 \usepackage{graphicx}
 \usepackage{wrapfig}
 % \usepackage{figure}
@@ -21,8 +20,7 @@
 \usepackage{multirow}
 
 \usepackage{amssymb}
-
-
+\usepackage{amsmath}
 
 \usepackage{tikz}
 \usepackage{listings}
@@ -83,7 +81,6 @@ Exploration of the influence of graph parameters on the generalization error of 
 
 \maketitle
 
-\tableofcontents
 
 
 \begin{abstract}
@@ -93,31 +90,89 @@ The goal of this bachelor thesis is to understand empirically how graph paramete
 
 \section{Introduction}
 
-Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs) are a class of neural networks that can operate on graph-structured data. GNNs have been shown to be effective in a wide range of tasks, such as node classification, link prediction, and graph classification. However, the behavior of GNNs is not well understood. In particular, it is not clear how the graph parameters/characteristics influence the generalization error of GNNs. The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics influence the generalization error of GNNs. 
+Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs) are a class of neural networks that can operate on graph-structured data. GNNs have been shown to be effective in a wide range of tasks, such as node classification, link prediction, and graph classification. However, the behavior of GNNs is not well understood. In particular, it is not clear about the relationshit between the graph parameters/characteristics and the generalization error of GNNs. The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics impact the generalization error of GNNs. 
+
+Before we untangle this problem, we need to define some terms.
+
+In graph theory, we assume $G=(V,E)$ is an undirected graph, where $V$ is the set of nodes and $E  \subseteq \{\{v,w\}|v,w \in V , v \neq w\}$ is the set of edges. $N(v)$ is the neighborhood of a node $v$, defined as $N(v) = \{w | \{v,w\} \in E\}$. $d(v)$ is the degree of a node $v$ which refers to the number of neighbors of $v$, that is, $d(v) = |N(v)|$. 
+
+What is a graph parameter?  A graph parameter is a function $f: \mathbb{G} \rightarrow \mathbb{R}$, which maps a graph to a real number. It characterizes a graph in a certain perspective.
+For example, the average degree of the graph, the average shortest path of the graph, the centrality meature of the graph, the average number of coloring in the 1-WL algorithm, etc. I will define concrete definitions in the section \ref{sec:graph_parameters}. In my early experiment, the average degree and the average shortest path of the graph were used as graph parameters.
+
+On the another hand, the graph classification task is a task where the goal is to classify a graph into one of several classes. In this thesis, the thesis will focus on the graph classification task. The generalization error $E_{gen}$ is a measure of how well the model generalizes to unseen data, which can be calculated as the difference between the training accuracy and the test accuracy.
+
+Here, the accuracy $Acc$ is defined as the proportion of correctly classified graphs, that is, 
+$$Acc = \frac{\text{Number of correctly classified graphs}}{\text{Total number of data points}}$$
+
+The generalization error is defined as
 \\
 
-What is a graph parameter?  A Graph parameter is a function $f: \mathbb{G} \Rightarrow \mathbb{R}$, which maps a graph to a real number. For example, the average degree of the graph, the average shortest path of the graph, the average number of coloring in the 1-WL algorithm, etc. In the early experiment, the graph parameters are calculated as the average degree and the average shortest path of the graphs.
-\\
+\begin{equation*}
+    E_{gen} = \eqnmarkbox[blue]{node1}{Acc_{train}} - \eqnmarkbox[blue]{node2}{Acc_{test}}
+\end{equation*}
+\annotate[yshift=0.5em]{left}{node1}{over train dataset}
+\annotate[yshift=0.5em]{right}{node2}{over test dataset}
 
-\\
-In the another hand, the generalization error is a measure of how well the model generalizes to unseen data. In the experiment, the generalization error is calculated as the difference between the training accuracy and the test accuracy.
-\\
-Why is it important to understand the influence of graph parameters on the generalization error of GNNs? The understanding of the influence of graph parameters on the generalization error of GNNs can help us to understand the behavior of GNNs. For example, if we know that the average degree of the graph has a significant influence on the generalization error of GNNs, we can design GNNs that are more robust to the average degree of the graph.
-
-
-
+Why is it important to understand the influence of graph parameters on the generalization error of GNNs? The understanding of the influence of graph parameters on the generalization error of GNNs can help us to understand the behavior of GNNs so that researchers can can tune GNNs to improve their predictive performance on new graphs.
 \section{Setup in the early experiment}
-In following, I will descripe training framework, datasets and models for the setup of the experiment.
+In following, I will descripe training framework, datasets, models and concrete graph parameters for the setup of the experiment.
 
 \subsection{Training Framework}
-The training framework is based on PyTorch Geometric~\cite{fey2019fast}. PyTorch Geometric is a library for deep learning on graphs and other irregular structures. It consists of various methods and utilities to ease the implementation of GNNs.
+The training framework is based on PyTorch Geometric~\cite{fey2019fast}. PyTorch Geometric is a library for deep learning on graphs and other irregular structures. It consists of various methods and utilities to ease the implementation of GNNs. 
 
 \subsection{Datasets}
-The dataset in the experiment is TUDataset~\cite{morris_tudataset_2020}. TUDataset is often used for the GNN evaluation. It consists data across different domains, including small molecules, bioinformatics, social networks and synthetic. Since the size of some datasets are quiet small (under 500 data points/graphs), I use 10-fold cross validation in the training process, in order to fully utilize the data. A dataset is splited into 1:1:8, inwhich one of the folds is treated as test dataset and another is treated as validation dataset. The rest of the folds are used for training. 
+The dataset used for the classification is TUDataset~\cite{morris_tudataset_2020}. TUDataset is often used for the GNN evaluation. It consists of data from different domains, including small molecules, bioinformatics, social networks and synthetic. Since the size of some datasets is quiet small (less than 500 data points/graphs), I use 10-fold cross validation in the training process, in order to fully utilize the data. A dataset is split into 1:1:8, where one of the folds is treated as the test dataset and another is treated as the validation dataset. The remaining folds are used for training. 
+
+In the early experiment, I took 10 datasets from different domains as examples. The datasets are Mutagenicity, NCI1, COIL-RAG, Letter-high, DD, PROTEIN\_full, COLORS-3, AIDS, ENZYMES, Cuneiform. In the future, I will explore more datasets in the experiment.
 
 \subsection{Models}
-In the early experiment, I have used GCN layer~\cite{kipf2017semisupervised} and GAT layer~\cite{velickovic2020pointer}. To prevent overfitting, dropout is used in the model. Relu is used as activation function. In the Appendix, I have provided the code of example models.
+In the early experiment, I have used Graph Convolutional Networks(GCN) layer~\cite{kipf2017semisupervised} and Graph Attention Networks(GAT) layer~\cite{velickovic2020pointer} to construct models. In order to overfitting, dropout is used in the model and Relu function is used as activation function. In the Appendix, I have provided the code of example models. In the future, I will explore more GNN layers in the experiment, including Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, GATv2~\cite{brody2021attentive} and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural} etc.
 
+
+\subsection{Graph Parameters Unter Investigation} \label{sec:graph_parameters}
+As graph parameters defined abstractly above, I give here the concrete definition of the graph parameters in the experiment.\\
+\begin{description}
+    \item [Average degree] The average degree of the graph $d_{avg}$ is defined as the average of the degrees of all nodes in the graph, that is
+    $$ d_{avg} = \frac{1}{|V|} \sum_{v \in V} d(v)$$
+    \item [Average shortest path length] The average shortest path length of the graph $a$ is defined as the average of the shortest paths between all pairs of nodes in the graph. The shortest path $d(s, t)$ between two nodes $v$ and $w$ is the minimum number of edges that need to be traversed to go from $v$ to $w$. The formal definition is
+    $$
+a = \frac{1}{|V|(|V|-1)} \sum_{v \in V} \sum_{w \in V, w \neq v} d(v, w)
+    $$
+    \item [Centrality measure of graphs] At first we have the definition of centrality measure in the \textbf{node level}. The centrality measure of a node is a measure of the importance of the node in the graph. There are many centrality measures, such as degree centrality, closeness centrality, betweenness centrality, and eigenvector centrality. 
+    
+    \textit{Degree centrality} is identical to the average degree of the graph defined above. 
+    
+    \textit{Closeness centrality} $C_C(v)$ is defined as the reciprocal of the sum of the length of shortest paths from the node $v$ to all other nodes in the graph, that is 
+    $$C_C(v) = \frac{1}{\sum_{w\in V}{d(v ,w)}}$$
+    where $d(v, w)$ is the shortest path between node $v$ and node $w$. 
+    
+    \textit{Betweenness centrality} $C_B(v)$ is the sum of the fraction of all-pairs shortest paths that pass through $v$. The definition can be given by the expression:
+    $$
+        C_B(v) = \sum_{s,t \in V} \frac{\sigma_{st}(v)}{\sigma_{st}}
+    $$
+    where $\sigma_{st}$ is the number of shortest paths between nodes $s$ and $t$, and $\sigma_{st}(v)$ is the number of shortest paths between nodes $s$ and $t$ that pass through node $v$.
+    
+    \textit{Eigenvector centrality} Eigenvector centrality is a measure of the influence of a node in a graph based on the concept that connections to high-scoring nodes contribute more to the score of the node in question. Formally, the eigenvector centrality $C_E(v)$ of a node $v$  is defined as the $v$ -th component of the eigenvector corresponding to the largest eigenvalue of the adjacency matrix $A$ of the graph. Mathematically, it can be expressed as:
+    
+    \[ C_E(v) = \frac{1}{\lambda} \sum_{u \in N(v)} a_{vu} C_E(u) \]
+    
+    where $ \lambda$ is the largest eigenvalue of the adjacency matrix $A$.
+$a_{vu}$ is the element of the adjacency matrix $A$ corresponding to the edge between nodes $v$  and $u$.
+$ C_E(u)$  is the eigenvector centrality of node $u$.
+
+
+    Finally in the \textbf{graph level}, the centrality measure of the graph is defined as the average of the centrality measures over all nodes in the graph.
+    \item [Average number of coloring in the 1-WL algorithm] The 1-dimensional Weisfeiler-Leman algorithm (1-WL) is a algorithm that assigns a unique label(color) to each node in the graph. The average number of coloring in the 1-WL algorithm is defined as the average number of colors used to color the nodes in the graph. The 1-WL algorithm is a powerful graph isomorphism algorithm that can be used to determine if two graphs are isomorphic. I give the procedure of the 1-WL algorithm here:
+    \begin{enumerate}
+        \item Assign the same color to all nodes in the graph.
+        \item Two nodes $v$, $u$ are assigned a different color if there is a color c such that the number of c-colored neighbors of $u$ is not equal to the number of c-colored neighbors of $v$.
+        \item Repeat step 2 until the colors of all nodes do not change.
+    \end{enumerate}
+    
+\end{description}
+
+
+Besides the graph parameters defined above, I will explore more graph parameters in the experiment if possible.
 
 \section{Experiment}
 % \includegraphics{experiment_procedure.pdf}
@@ -134,11 +189,17 @@ The experiment consists in three parts: 1. Train the models from datasets and ev
 
 
 \subsection{Experimental details in the early stage}
-I use Adam optimizer with learning rate 0.01. The batch size is set to 64. The hidden dimension of the GNN layer is set to 64. The number of epochs is set to 200. To prevent overfitting and to save time, the early stopping is used with patience 20. The loss function is set to CrossEntropyLoss. 
+Initially, I use Adam optimizer with learning rate 0.01. The batch size is set to 64. The hidden dimension of the GNN layer is set to 64. The number of epochs is set to 200. To prevent overfitting and to save time, the early stopping is used with patience 20. The loss function is set to CrossEntropyLoss. 
 
-\section{Results}
+In the future, I will explore different hyperparameters, such as learning rate, batch size, size of hidden dimension, and patience in the early stopping.
 
-Here I take seven datasets from TUDataset as examples. The calculated parameters are shown in Table~\ref{tab:parameter}. The generalization error of the models are shown in Table~\ref{tab:error}. 
+% \clearpage
+
+
+\section{Results of early experiment} \label{sec:results}
+
+Here I take ten datasets from TUDataset as examples. The calculated parameters are shown in Table~\ref{tab:parameter}. The generalization error of the models are shown in Table~\ref{tab:error}. 
+
 
 \begin{table}[h!]
     \centering
@@ -152,9 +213,14 @@ Here I take seven datasets from TUDataset as examples. The calculated parameters
     Letter-high                                  & 1.8896         & 1.5173                     \\
     DD                                           & 4.9790         & 7.9700                     \\
     PTOTEIN\_full                                & 3.7346         & 4.7123                     \\
-    COLORS-3                                     & 2.9288         & 2.0945                     \\ \bottomrule
+    COLORS-3                                     & 2.9288         & 2.0945                     \\ 
+
+    AIDS  &  2.01286  & 3.2864 \\
+    ENZYMES  &  3.8626  & 4.4461 \\
+    Cuneiform  &  4.0795  & 2.24442 \\ \bottomrule
+
     \end{tabular}
-    \caption{The calculated parameters from a set of datasets}
+    \caption{The calculated parameters from a set of datasets, here used two parameters, the average degree of the graph and the average shortest path of the graph which defined in the section \ref{sec:graph_parameters}.}
     \label{tab:parameter}
 \end{table}
 
@@ -169,27 +235,58 @@ Here I take seven datasets from TUDataset as examples. The calculated parameters
     Letter-high    & 0.0403      & 0.04342 \\
     DD             & 0.0524      & 0.05849 \\
     PROTEINS\_full & 0.0189      & 0.05032 \\
-    COLORS-3       & 0.0076      & 0.01428 \\ \bottomrule
+    COLORS-3       & 0.0076      & 0.01428 \\
+    AIDS           &  0.00931    & 0.008642 \\
+    ENZYMES           &  0.0345    & 0.052339 \\
+    Cuneiform           &  0.2392    & 0.09868 \\ \bottomrule
     \end{tabular}
-    \caption{The calculated generalization error from a set of datasets}
+    \caption{The table shows the calculated generalization error from a set of datasets, where the generalization error is calculated as the difference between the training accuracy and the test accuracy.}
     \label{tab:error}
 \end{table}
 
-Then I plot the generalization error against the graph parameters. The result is shown in Figure~\ref{fig:scatter}.
+
+
+I then used a scatter plot to visualize the generalization error against the two graph parameters. The result is shown in Figure~\ref{fig:scatter}. Also I calculated the correlation between the generalization error and the graph parameters. The result is shown in Table~\ref{tab:correlation}.
 
 \begin{figure}[h!]
     \includegraphics[width=\textwidth]{final_results.png}
-    \caption{The generalization error against the graph parameters}
+    \caption{The generalization error against the graph parameters, the x-axis is the average degree of the graph, the y-axis is the generalization error of the model. The each point in the plot is the calculated result from different datasets. It is obvious that more datasets are needed to get more reliable results.}
     \label{fig:scatter}
 \end{figure}
 
-\section{In the further work}
-In the future, I plan to explore different GNN layers and datasets to evaluate the consistency of the results. Additionally, I will consider experimenting with various graph parameters. In \cite{gera2018annotated}, the authors have proposed a set of graph parameters that can be used to characterize the graph. I will use these parameters in the future work.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{@{}ll@{}}
+    \toprule
+                       & Ave. Generalization Error \\ \midrule
+    Ave degree            & 0.4068                    \\
+    Ave. shortest path & -0.2074                   \\ \bottomrule
+    \end{tabular}
+    \caption{The correlation between the generalization error and the graph parameters. The correlation is calculated by the Pearson correlation coefficient.}
+    \label{tab:correlation}
+    \end{table}
 
 \newpage
 
-\bibliographystyle{abbrvnat} % or another style like unsrt, alpha, etc.
-\bibliography{bibliography} % refers to example.bib
+\section{Objective of the thesis}
+
+The Objective of this bachelor thesis is to understand empirically how graph parameters/characteristics influence the generalization error of GNNs. Beside the content of early experiment, I will explore more GNN layers in the experiment, such as Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, GATv2~\cite{brody2021attentive} and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural} etc.
+I will explore all the graph parameter I mensioned in \ref{sec:graph_parameters} and more if possibly. 
+
+I will also explore different hyperparameters, such as learning rate, batch size, hidden dimension, number of epochs, and patience in the early stopping to find the best setting for the models/datasets. 
+
+
+In the section~\ref{sec:results}, I have made the experiment on 10 datasets. In the future, I will make the experiment on more datasets to get more reliable results.
+
+\clearpage
+
+\tableofcontents
+
+\newpage
+
+\bibliographystyle{abbrvnat}
+\bibliography{main} % refers to example.bib
 
 % All reduce Graphs
 \newpage 
