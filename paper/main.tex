@@ -90,21 +90,18 @@ The goal of this bachelor thesis is to understand empirically how graph paramete
 
 \section{Introduction}
 
-Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs) are a class of neural networks that can operate on graph-structured data. GNNs have been shown to be effective in a wide range of tasks, such as node classification, link prediction, and graph classification. However, the behavior of GNNs is not well understood. In particular, it is not clear about the relationshit between the graph parameters/characteristics and the generalization error of GNNs. The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics impact the generalization error of GNNs. 
+Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs), also known as deep learning on graphs, are a class of neural networks that can operate on graph-structured data, such as social networks~\cite{easley2010networks}, biological networks~\cite{barabasi2004network}, and images~\cite{simonovsky2017dynamic}. GNNs have been shown to be effective in a wide range of tasks, such as node classification, link prediction, and graph classification. However, the behavior of GNNs is not well understood. In particular, it is not clear about the relationship between the graph parameters/characteristics and the generalization error of GNNs. The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics impact the generalization error of GNNs. 
 
-Before we untangle this problem, we need to define some terms.
+Before we untangle this problem, we need to define some terms with regard to the graph. In graph theory, we assume that $G=(V,E)$ is an undirected graph, where $V$ is the set of nodes and $E  \subseteq \{\{v,w\}\mid v,w \in V , v \neq w\}$ is the set of edges. The neighborhood of a node $v$ is denoted as $N(v)$, defined as $N(v) = \{w \mid \{v,w\} \in E\}$. The degree of a node $v$, denoted as $d(v)$, is the number of neighbors of $v$, that is, $d(v) = |N(v)|$.
 
-In graph theory, we assume $G=(V,E)$ is an undirected graph, where $V$ is the set of nodes and $E  \subseteq \{\{v,w\}|v,w \in V , v \neq w\}$ is the set of edges. $N(v)$ is the neighborhood of a node $v$, defined as $N(v) = \{w | \{v,w\} \in E\}$. $d(v)$ is the degree of a node $v$ which refers to the number of neighbors of $v$, that is, $d(v) = |N(v)|$. 
+With these foundational terms in place, we can now introduce the concept of a graph parameter, which allows us to quantify certain properties of a graph. A graph parameter is a function $f: \mathbb{G} \rightarrow \mathbb{R}^d$ for $d\in \mathbb{N} >0$, which maps a graph to a set of real numbers. It characterizes a graph in a certain perspective. Examples of such parameters include the average degree of the graph, the average shortest path of the graph, the centrality measure of the graph, the average number of colourings in the 1-WL algorithm, and so forth. I will define concrete definitions in the section \ref{sec:graph_parameters}. In my early experiment, the average degree and the average shortest path of the graph were used as graph parameters.
 
-What is a graph parameter?  A graph parameter is a function $f: \mathbb{G} \rightarrow \mathbb{R}$, which maps a graph to a real number. It characterizes a graph in a certain perspective.
-For example, the average degree of the graph, the average shortest path of the graph, the centrality meature of the graph, the average number of coloring in the 1-WL algorithm, etc. I will define concrete definitions in the section \ref{sec:graph_parameters}. In my early experiment, the average degree and the average shortest path of the graph were used as graph parameters.
-
-On the another hand, the graph classification task is a task where the goal is to classify a graph into one of several classes. In this thesis, the thesis will focus on the graph classification task. The generalization error $E_{gen}$ is a measure of how well the model generalizes to unseen data, which can be calculated as the difference between the training accuracy and the test accuracy.
+On the another hand, the graph classification task is a task where the goal is to classify a graph into one of several classes. The present thesis will focus on the graph classification task. The empirical generalization error $E_{gen}$ is a measure of how well the model generalizes to unseen data, which can be calculated as the difference between the training accuracy and the test accuracy.
 
 Here, the accuracy $Acc$ is defined as the proportion of correctly classified graphs, that is, 
 $$Acc = \frac{\text{Number of correctly classified graphs}}{\text{Total number of data points}}$$
 
-The generalization error is defined as
+The empirical generalization error is defined as
 \\
 
 \begin{equation*}
@@ -121,15 +118,15 @@ In following, I will descripe training framework, datasets, models and concrete 
 The training framework is based on PyTorch Geometric~\cite{fey2019fast}. PyTorch Geometric is a library for deep learning on graphs and other irregular structures. It consists of various methods and utilities to ease the implementation of GNNs. 
 
 \subsection{Datasets}
-The dataset used for the classification is TUDataset~\cite{morris_tudataset_2020}. TUDataset is often used for the GNN evaluation. It consists of data from different domains, including small molecules, bioinformatics, social networks and synthetic. Since the size of some datasets is quiet small (less than 500 data points/graphs), I use 10-fold cross validation in the training process, in order to fully utilize the data. A dataset is split into 1:1:8, where one of the folds is treated as the test dataset and another is treated as the validation dataset. The remaining folds are used for training. 
+The dataset used for the classification is TUDataset~\cite{morris2020tudataset}. TUDataset is often used for the GNN evaluation. It consists of data from different domains, including small molecules, bioinformatics, social networks and synthetic. Since the size of some datasets is quiet small (less than 500 data points/graphs), I use 10-fold cross validation in the training process, in order to fully utilize the data. A dataset is split into 1:1:8, where one of the folds is treated as the test dataset and another is treated as the validation dataset. The remaining folds are used for training. 
 
 In the early experiment, I took 10 datasets from different domains as examples. The datasets are Mutagenicity, NCI1, COIL-RAG, Letter-high, DD, PROTEIN\_full, COLORS-3, AIDS, ENZYMES, Cuneiform. In the future, I will explore more datasets in the experiment.
 
 \subsection{Models}
-In the early experiment, I have used Graph Convolutional Networks(GCN) layer~\cite{kipf2017semisupervised} and Graph Attention Networks(GAT) layer~\cite{velickovic2020pointer} to construct models. In order to overfitting, dropout is used in the model and Relu function is used as activation function. In the Appendix, I have provided the code of example models. In the future, I will explore more GNN layers in the experiment, including Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, GATv2~\cite{brody2021attentive} and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural} etc.
+In the early experiment, I have used Graph Convolutional Networks(GCN) layer~\cite{kipf2016semi} and Graph Attention Networks(GAT) layer~\cite{velickovic2020pointer} to construct models. In order to overfitting, dropout is used in the model and Relu function is used as activation function. In the Appendix, I have provided the code of example models. In the future, I will explore more GNN layers in the experiment, including Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, GATv2~\cite{brody2021attentive} and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural} etc.
 
 
-\subsection{Graph Parameters Unter Investigation} \label{sec:graph_parameters}
+\subsection{Graph Parameters Under Investigation} \label{sec:graph_parameters}
 As graph parameters defined abstractly above, I give here the concrete definition of the graph parameters in the experiment.\\
 \begin{description}
     \item [Average degree] The average degree of the graph $d_{avg}$ is defined as the average of the degrees of all nodes in the graph, that is
