@@ -110,3 +110,43 @@ def read_file_to_list(file_path):
     except FileNotFoundError:
         print(f"File not found: {file_path}")
         return []
+
+class IMDBPreTransform(object):
+    def __call__(self, data):
+        data.x = degree(data.edge_index[0], data.num_nodes, dtype=torch.long)
+        data.x = F.one_hot(data.x, num_classes=136).to(torch.float)
+        return data
+
+def load_dataset(dataset_name: str):
+    if dataset_name is 'IMDB-BINARY':
+        return TUDataset('data/TUDataset', name='IMDB-BINARY', pre_transform=IMDBPreTransform(), forch_reload=True)
+    else:
+        return TUDataset('data/TUDataset', name=dataset_name, use_node_attr=True)
+
+def get_dataloader(dataset, fold: int, batch_size=64, is_10_fold_validation_enabled=True):
+    """
+    split the dataset into 10 fold, take one into dataloader and return that dataloader. If 10 fold validation is not enabled, return put all data into dataloader
+    """
+    
+    if is_10_fold_validation_enabled is False:
+        return DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+
+    n = len(dataset) // 10
+    test_mask[fold*n:(fold+1)*n] = 1
+    val_mask = torch.zeros(len(dataset), dtype=torch.bool)
+
+    if fold == 9:
+        val_mask[0:n] = 1
+    else:
+        val_mask[(fold+1)*n:(fold+2)*n] = 1
+
+    train_dataset = dataset[~test_mask & ~val_mask]
+    val_dataset = dataset[val_mask]
+    test_dataset = dataset[test_mask]
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    return train_loader, val_loader, test_loader
