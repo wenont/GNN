@@ -94,13 +94,13 @@ The goal of this bachelor thesis is to understand empirically how graph paramete
 
 Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs), also known as deep learning on graphs, are a class of neural networks that can operate on graph-structured data, such as social networks~\cite{easley2010networks}, biological networks~\cite{barabasi2004network}, and images~\cite{simonovsky2017dynamic}. GNNs use the structure of a graph to perform "message passing", allowing information to propagate across nodes and edges. The key idea is to iteratively aggregate and update node features by exchanging information with local neighboring nodes, which allows GNNs to capture the structural information of the graph. This information is then used to make predictions. GNNs have been demonstrated to be effective in a wide range of tasks, such as node classification~\cite{hamilton2017inductive}, edge prediction~\cite{morselli2021network}, and graph classification~\cite{gilmer2017neural}. Popular GNNs in recent years include Graph Convolutional Networks (GCN)~\cite{kipf2016semi}, Graph Attention Networks (GAT)~\cite{velickovic2020pointer}, and Message Passing Neural Networks (MPNN)~\cite{gilmer2017neural}.  
 
-However, the behavior of GNNs is not well understood. In particular, it is not clear about the relationship between the graph parameters/characteristics and the empirical generalization error of GNNs. The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics impact the generalization error of GNNs. 
+However, the behavior of GNNs is not well understood. Particularly, the relationship between graph parameters/characteristics and the empirical generalization error of GNNs is not clear.  The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics impact the generalization error of GNNs. 
 
-Before we untangle this problem, we need to define some terms with regard to the graph. In graph theory, we assume that $G=(V,E)$ is an undirected graph, where $V$ is the set of nodes and $E  \subseteq \{\{v,w\}\mid v,w \in V , v \neq w\}$ is the set of edges. The neighborhood of a node $v$ is denoted as $N(v)$, defined as $N(v) = \{w \mid \{v,w\} \in E\}$. The degree of a node $v$, denoted as $d(v)$, is the number of neighbors of $v$, that is, $d(v) = |N(v)|$. In addition to the nodes and edges that comprise the graph, we attach a more complex set of data to each node.  A feature vector $x_n\in \mathbb{R}^k$, is attached to a node $v_n$, and in some cases, edge feature vectors are also included. These vectors can be used to characterize graphs or nodes in graphs. The adjacency matrix $A \in \mathbb{R}^{n \times n}$ is a matrix that represents the connections between nodes in the graph. The element $a_{ij}$ of the adjacency matrix is 1 if there is an edge between node $v_i$ and node $v_j$, and 0 otherwise.
+Before we untangle this problem, we need to define some terms with regard to the graph. In graph theory, we assume that $G=(V,E)$ is an undirected graph, where $V$ is the set of nodes and $E  \subseteq \{\{v,w\}\mid v,w \in V , v \neq w\}$ is the set of edges. We use $\mathbb{G}$ to represent the set of all possible graphs. The neighborhood of a node $v$ is denoted as $N(v)$, defined as $N(v) = \{w \mid \{v,w\} \in E\}$. The degree of a node $v$, denoted as $d(v)$, is the number of neighbors of $v$, that is, $d(v) = |N(v)|$. In addition to the nodes and edges that comprise the graph, we can attach a more complex set of data to each node.  A feature vector $x_n\in \mathbb{R}^k$, is attached to a node $v_n$, and in some cases, edge feature vectors are also included. These vectors can be used to characterize graphs or nodes in graphs. The adjacency matrix $A \in \mathbb{R}^{|V| \times |V|}$ is a matrix that represents the connections between nodes in the graph. The element $a_{ij}$ of the adjacency matrix is 1 if there is an edge between node $v_i$ and node $v_j$, and 0 otherwise.
 
-With these foundational terms in place, we can now introduce the concept of a graph parameter. A graph parameter is a function $f: \mathbb{G} \rightarrow \mathbb{R}^d$ for $d\in \mathbb{N} >0$, which maps a graph to a set of real numbers. Furthermore, such functions need to be permutation invariant, i.e. $f(G) = f(G')$ if $G$ and $G'$ are isomorphic graphs. A graph parameter characterizes a graph from a certain perspective and allows us to quantify certain properties of a graph. Examples of such parameters include the average degree of the graph, the average shortest path of the graph, the centrality measure of the graph, the average number of coloring in the 1-WL algorithm, and so forth. I will define concrete definitions in the section \ref{sec:graph_parameters}. 
+With these foundational terms in place, we can now introduce the concept of a graph parameter. A graph parameter is a function $f: \mathbb{G} \rightarrow \mathbb{R}^d$ for $d\in \mathbb{N} >0$, which maps a graph to a d-dimensional vector over the reals. Furthermore, such functions need to be permutation invariant, i.e., $f(G) = f(\pi(G))$ for any permutation $\pi$ of the nodes of $G$, where a permutation is a function $\pi: V \rightarrow V$ and $\pi(G)$ denotes the graph obtained by permuting the nodes of $G$ according to $\pi$. A graph parameter allows us to quantify certain properties of a graph, from the basic structural numbers (number of nodes, number of edges, average degree, etc.) to distance properties (average shortest path length, diameter, etc.) to more complex properties (graph clustering coefficient, average number of coloring in the 1-WL algorithm, etc.). This thesis will focus on seven graph parameters, with definitions provided in section~\ref{sec:graph_parameters}.
 
-On the another hand, the graph classification task aims to classify a graph into one of several classes. This thesis will specifically focus on addressing this task. A key concept in evaluating model performance or generalization ability in such task is the empirical generalization error $E_{gen}$. This is a measure of how well the model generalizes to unseen data, which can be calculated as the difference between the training accuracy and the test accuracy. It is defined as
+Additionally, the graph classification task aims to classify a graph into one of several classes. This thesis will specifically focus on addressing this task. A key concept in evaluating model performance or generalization ability in such task is the empirical generalization error $E_{gen}$. This is a measure of how well the model generalizes to unseen data, which can be calculated as the difference between the training accuracy and the test accuracy. It is defined as
 
 $$
     E_{gen} = {Acc_{train}} - {Acc_{test}}
@@ -309,24 +309,36 @@ In the section~\ref{sec:results}, I ran the experiment on 10 datasets. In the fu
 
 \section{Preliminary Schedule} \label{sec:schedule}
 
-\begin{enumerate}
-% \def\labelenumi{\arabic{enumi}.}
-% \tightlist
+\begin{itemize}
+
 \item
-  Introduction
+  1. Introduction
 \item
-  Experimental setup
+  2. Background on learning on graphs
 \item
-  Result
+  2.1 Notation
 \item
-  Discussion
+  2.2 Machine learning
 \item
-  Conclusion
+  2.3 Graph neural networks
 \item
-  References
+  2.4 Graph parameters
 \item
-  Appendix
-\end{enumerate}
+  3. Experimental study
+\item
+  3.1 Experimental setup
+\item
+  3.2. Results
+\item
+  3.3. Discussion
+\item
+  6. Conclusion
+\item
+  7. References
+\item
+  9. Appendix
+
+\end{itemize}
 
 \clearpage
 
