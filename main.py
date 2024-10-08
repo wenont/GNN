@@ -2,7 +2,7 @@ from train_procedure import get_generalization_error_from_a_dataset
 import pandas as pd
 import logging
 from tabulate import tabulate
-from utils import get_average_degree, get_average_shortest_path, read_file_to_list
+from utils import get_average_degree, get_average_shortest_path, get_graph_diameter, get_graph_density, get_graph_clustering_coefficient, get_average_closeness_centrality, get_average_betweenness_centrality, get_average_eigenvector_centrality, wl_1d_color_count, read_file_to_list
 from tqdm import tqdm
 import logging
 import matplotlib.pyplot as plt
@@ -83,6 +83,21 @@ def get_correlation():
     correlation2 = df1['Ave. generalization error'].corr(df2['Ave. shortest path'])
     print(f'Correlation of ave. shortest path and ave. generalization error: {correlation2}')
 
+
+def foo():
+    datasets = read_file_to_list(DATAPATH)
+
+    df = pd.DataFrame({
+        'Name': [],
+        'get_average_number_of_coloring_1WL': []
+    })
+
+    for dataset in tqdm(datasets):
+        df.loc[len(df)] = [dataset, wl_1d_color_count(dataset)]
+
+    print(df)
+
+
 if __name__ == '__main__':
     # get input from user
     print('Please choose from the following options:')
@@ -90,7 +105,8 @@ if __name__ == '__main__':
     print('2. Get Parameters')
     print('3. Compare generalization error and parameters')
     print('4. Get correlation')
-    print('5. Exit')
+    print('5. foo')
+    print('6. Exit')
     option = input('Enter your choice: ')
 
     if option == '1':
@@ -101,3 +117,7 @@ if __name__ == '__main__':
         compare_generalization_error_and_parameters()
     elif option == '4':
         get_correlation()
+    elif option == '5':
+        foo()
+    else:
+        pass
