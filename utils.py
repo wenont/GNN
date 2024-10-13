@@ -6,8 +6,9 @@ import time
 import math
 from dataclasses import dataclass
 from torch_geometric.datasets import TUDataset
-from tqdm import tqdm
 import torch
+from rich.progress import track
+
 
 
 
@@ -66,12 +67,13 @@ def plot_training_results(dataset_name: str, netParams: NetParams, train_accs,
     plt.show()
 
 def get_average_degree(dataset_name, verbose=False):
-    if verbose:
-        print(f'\nCalculating average degree for {dataset_name}')
+    '''
+    Calculate the average degree of the graph
+    '''
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     degs = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating average degree for {dataset_name}', disable=not verbose):
         deg = degree(data.edge_index[0], data.num_nodes)
         degs.append(deg.mean().item())    
 
@@ -81,18 +83,21 @@ def get_average_shortest_path(dataset_name, show_errors=False, verbose=False):
     '''
     Calculate the average shortest path of the graph
     '''
-    if verbose:
-        print(f'Calculating average shortest path for {dataset_name}')
-    dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
+    dataset = TUDataset(root='data/TUDataset', name=dataset_name, 
+                        use_node_attr=True)
     avg_shortest_paths = []
-
     num_errors = 0
 
-    for data in dataset:
+    for data in track(
+        dataset, 
+        description=f'Calculating average shortest path for {dataset_name}', 
+        disable=not verbose
+    ):
         G = to_networkx(data)
         try:
             avg_shortest_paths.append(nx.average_shortest_path_length(G))
         except:
+            print(f'Error in {data}')
             num_errors += 1
             continue
     if show_errors:
@@ -105,17 +110,16 @@ def get_graph_diameter(dataset_name, show_errors=False, verbose=False):
     '''
     Calculate the diameter of the graph
     '''
-    if verbose:
-        print(f'Calculating graph diameter for {dataset_name}')
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     diameters = []
     num_errors = 0
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating graph diameter for {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         try:
             diameters.append(nx.diameter(G))
         except:
+            print(f'Error in {data}')
             num_errors += 1
             continue
     if show_errors:
@@ -128,12 +132,11 @@ def get_graph_density(dataset_name, verbose=False):
     '''
     Calculate the density of the graph
     '''
-    if verbose:
-        print(f'Calculating graph density for {dataset_name}')
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     densities = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating graph density for \
+                      {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         densities.append(nx.density(G))
 
@@ -143,11 +146,11 @@ def get_graph_clustering_coefficient(dataset_name, verbose=False):
     '''
     Calculate the clustering coefficient of the graph
     '''
-    if verbose:
-        dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
+    dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     clustering_coefficients = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating graph clustering '
+                      f'coefficient for {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         clustering_coefficients.append(nx.average_clustering(G))
 
@@ -157,12 +160,11 @@ def get_graph_transitivity(dataset_name, verbose=False):
     '''
     Calculate the transitivity of the graph
     '''
-    if verbose:
-        print(f'Calculating graph transitivity for {dataset_name}')
+
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     transitivity = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating graph transitivity for {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         transitivity.append(nx.transitivity(G))
 
@@ -172,12 +174,10 @@ def get_graph_assortativity(dataset_name, verbose=False):
     '''
     Calculate the assortativity of the graph
     '''
-    if verbose:
-        print(f'Calculating graph assortativity for {dataset_name}')
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     assortativity = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating graph assortativity for {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         assortativity.append(nx.degree_assortativity_coefficient(G))
 
@@ -187,12 +187,10 @@ def get_average_closeness_centrality(dataset_name, verbose=False):
     '''
     Calculate the average closeness centrality of the graph
     '''
-    if verbose:
-        print(f'Calculating average closeness centrality for {dataset_name}')
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     closeness_centralities = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating average closeness centrality for {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         closeness_centralities.append(sum(nx.closeness_centrality(G).values()) 
                                       / G.number_of_nodes())
@@ -203,12 +201,10 @@ def get_average_betweenness_centrality(dataset_name, verbose=False):
     '''
     Calculate the average betweenness centrality of the graph
     '''
-    if verbose:
-        print(f'Calculating average betweenness centrality for {dataset_name}')
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     betweenness_centralities = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating average betweenness centrality for {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         betweenness_centralities.append(sum(nx.betweenness_centrality(G).values()) 
                                         / G.number_of_nodes())
@@ -219,12 +215,11 @@ def get_average_eigenvector_centrality(dataset_name, verbose=False):
     '''
     Calculate the average eigenvector centrality of the graph, given the dataset name
     '''
-    if verbose:
-        print(f'Calculating average eigenvector centrality for {dataset_name}')
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     eigenvector_centralities = []
 
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating average eigenvector \
+                      centrality for {dataset_name}', disable=not verbose):
         G = to_networkx(data)
         eigenvector_centralities.append(sum(nx.eigenvector_centrality(G, max_iter=100000).values()) / G.number_of_nodes())
 
@@ -234,12 +229,10 @@ def wl_1d_color_count(dataset_name, verbose=False):
     '''
     Calculate the average number of coloring in 1WL of the graph
     '''
-    if verbose:
-        print(f'Calculating average number of coloring in 1WL for {dataset_name}')
     dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     color_count_sum = []
     
-    for data in dataset:
+    for data in track(dataset, description=f'Calculating average number of coloring in 1WL for {dataset_name}', disable=not verbose):
         Graph = to_networkx(data)
         # Initialize all nodes with the same color
         colors = {node: 0 for node in Graph.nodes()}
