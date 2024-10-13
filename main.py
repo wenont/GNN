@@ -19,6 +19,10 @@ import logging
 import matplotlib.pyplot as plt
 import argparse
 
+from rich import print
+from rich.panel import Panel
+
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="increase output verbosity",
@@ -72,18 +76,20 @@ def calcualte_parameters():
     })
 
     # Populate the DataFrame with data from each dataset
-    for dataset in tqdm(datasets):
+    len_datasets = len(datasets)
+    for i, dataset in enumerate(datasets):
+        print(Panel(f'[{i+1}/{len_datasets}]: [red]{dataset}'))
         df.loc[len(df)] = [
             dataset,
-            get_average_degree(dataset, verbose=args.verbose),
-            get_average_shortest_path(dataset, verbose=args.verbose),
-            get_graph_diameter(dataset, verbose=args.verbose),
-            get_graph_density(dataset, verbose=args.verbose),
-            get_graph_clustering_coefficient(dataset, verbose=args.verbose),
-            get_average_closeness_centrality(dataset, verbose=args.verbose),
-            get_average_betweenness_centrality(dataset, verbose=args.verbose),
-            get_average_eigenvector_centrality(dataset, verbose=args.verbose),
-            wl_1d_color_count(dataset, verbose=args.verbose),
+            get_average_degree(dataset),
+            get_average_shortest_path(dataset),
+            get_graph_diameter(dataset),
+            get_graph_density(dataset),
+            get_graph_clustering_coefficient(dataset),
+            get_average_closeness_centrality(dataset),
+            get_average_betweenness_centrality(dataset),
+            get_average_eigenvector_centrality(dataset),
+            wl_1d_color_count(dataset),
         ]
 
     logger.info(tabulate(df, headers='keys', tablefmt='psql'))
