@@ -16,4 +16,7 @@ main:
 	@${PYTHON} main.py
 
 parameter:
-	@${PYTHON} main.py --function parameter --dataset small_molecules.txt --verbose
+	@${PYTHON} main.py --function parameter --dataset small_molecules --verbose
+
+parameter2:
+	@${PYTHON} main.py --function parameter --dataset bioinformatics --verbose
