@@ -11,6 +11,7 @@ from utils import (
     get_average_closeness_centrality,
     get_average_betweenness_centrality,
     get_average_eigenvector_centrality,
+    get_dataset_statistics,
     wl_1d_color_count,
     read_file_to_list
 )
@@ -31,14 +32,14 @@ parser.add_argument("-f", "--function", help="function name")
 args = parser.parse_args()
 
 if args.dataset:
-    DATAPATH = args.dataset
+    DATAPATH = f'data/{args.dataset}.txt'
 else:
-    DATAPATH = 'datasets.txt'
+    DATAPATH = 'data/small_molecules.txt'
 
 
 def calculate_generalation_error():
     logger = logging.getLogger(__name__)
-    logging.basicConfig(filename='./results/parameters.log', encoding='utf-8',
+    logging.basicConfig(filename='./log/parameters.log', encoding='utf-8',
                         level=logging.INFO, format='%(message)s', filemode='a')
     datasets = read_file_to_list(DATAPATH)
 
@@ -59,7 +60,7 @@ def calculate_generalation_error():
 
 def calcualte_parameters():
     logger = logging.getLogger(__name__)
-    logging.basicConfig(filename='./results/parameters.log', encoding='utf-8',
+    logging.basicConfig(filename='./log/parameters.log', encoding='utf-8',
                         level=logging.INFO, format='%(message)s', filemode='a')
     datasets = read_file_to_list(DATAPATH)
 
@@ -83,19 +84,19 @@ def calcualte_parameters():
         print(Panel(f'[{i+1}/{len_datasets}]: [red]{dataset}'))
         df.loc[len(df)] = [
             dataset,
-            get_average_degree(dataset),
-            get_average_shortest_path(dataset),
-            get_graph_diameter(dataset),
-            get_graph_density(dataset),
-            get_graph_clustering_coefficient(dataset),
-            get_average_closeness_centrality(dataset),
-            get_average_betweenness_centrality(dataset),
-            get_average_eigenvector_centrality(dataset),
-            wl_1d_color_count(dataset),
+            get_average_degree(dataset, args.verbose),
+            get_average_shortest_path(dataset, args.verbose),
+            get_graph_diameter(dataset, args.verbose),
+            get_graph_density(dataset, args.verbose),
+            get_graph_clustering_coefficient(dataset, args.verbose),
+            get_average_closeness_centrality(dataset, args.verbose),
+            get_average_betweenness_centrality(dataset, args.verbose),
+            get_average_eigenvector_centrality(dataset, args.verbose),
+            wl_1d_color_count(dataset, args.verbose),
         ]
 
     logger.info(tabulate(df, headers='keys', tablefmt='psql'))
-    df.to_csv(f'parameters_{DATAPATH}.csv')
+    df.to_csv(f'results/parameters_{args.dataset}.csv')
 
 
 def compare_generalization_error_and_parameters():
@@ -146,18 +147,12 @@ def get_correlation():
 
 
 def foo():
+    DATAPATH = 'data/test_dataset.txt'
+
     datasets = read_file_to_list(DATAPATH)
 
-    df = pd.DataFrame({
-        'Name': [],
-        'get_average_number_of_coloring_1WL': []
-    })
-
-    for dataset in tqdm(datasets):
-        df.loc[len(df)] = [
-            dataset, get_average_eigenvector_centrality(dataset)]
-
-    print(df)
+    for dataset in datasets:
+        get_dataset_statistics(dataset)
 
 
 def interactive_mode():
