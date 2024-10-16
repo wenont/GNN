@@ -2,9 +2,6 @@
 
 PYTHON = /opt/miniconda3/envs/bt/bin/python
 
-say_hello:
-	@echo "Hello, World!"
-
 install:
 	@if conda env list | grep -q '^bt'; then \
 			echo "environment exists"; \
@@ -15,8 +12,14 @@ install:
 main:
 	@${PYTHON} main.py
 
-parameter:
+p:
 	@${PYTHON} main.py --function parameter --dataset small_molecules --verbose
 
-parameter2:
+p1:
 	@${PYTHON} main.py --function parameter --dataset bioinformatics --verbose
+
+p2:
+	@${PYTHON} main.py --function parameter --dataset computer_vision --verbose
+
+t:
+	@${PYTHON} main.py --function parameter --dataset test_dataset --verbose
