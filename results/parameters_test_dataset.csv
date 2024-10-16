@@ -1,0 +1,2 @@
+,Name,Ave. degree,Ave. shortest path,Graph diameter,Graph density,Graph clustering coefficient,Ave. closeness centrality,Ave. betweenness centrality,Ave. eigenvector centrality,1-WL color count
+0,ENZYMES,3.862625308732192,4.2810541955964485,10.4265625,0.15988781251795436,0.45339128626900965,0.26357344896409207,0.1158938852730127,0.14714477028727935,28.575
