@@ -21,5 +21,9 @@ p1:
 p2:
 	@${PYTHON} main.py --function parameter --dataset computer_vision --verbose
 
+p3:
+	@${PYTHON} main.py --function parameter --dataset social_networks --verbose
+
 t:
 	@${PYTHON} main.py --function parameter --dataset test_dataset --verbose
+
