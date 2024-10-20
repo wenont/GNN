@@ -1,0 +1,10 @@
+Small molecules dataset:
+['AIDS', 'BZR', 'BZR_MD', 'COX2', 'COX2_MD', 'DHFR', 'DHFR_MD', 'ER_MD', 'FRANKENSTEIN', 'MCF-7', 'MCF-7H', 'MOLT-4', 'MOLT-4H', 'Mutagenicity', 'MUTAG', 'NCI1', 'NCI109', 'NCI-H23', 'NCI-H23H', 'OVCAR-8', 'OVCAR-8H', 'P388', 'P388H', 'PC-3', 'PC-3H', 'PTC_FM', 'PTC_FR', 'PTC_MM', 'PTC_MR', 'SF-295', 'SF-295H', 'SN12C', 'SN12CH', 'SW-620', 'SW-620H', 'UACC257', 'UACC257H', 'Yeast', 'YeastH']
+Bioinformatics dataset:
+['DD', 'ENZYMES', 'KKI', 'OHSU', 'Peking_1', 'PROTEINS', 'PROTEINS_full']
+Computer Vision dataset:
+['COIL-DEL', 'COIL-RAG', 'Cuneiform', 'Fingerprint', 'FIRSTMM_DB', 'Letter-high', 'Letter-low', 'Letter-med', 'MSRC_9', 'MSRC_21', 'MSRC_21C']
+Social networks dataset:
+['COLLAB', 'dblp_ct1', 'dblp_ct2', 'DBLP_v1', 'deezer_ego_nets', 'facebook_ct2', 'highschool_ct1', 'highschool_ct2', 'IMDB-BINARY', 'IMDB-MULTI', 'infectious_ct1', 'infectious_ct2', 'mit_ct1', 'mit_ct2', 'REDDIT-BINARY', 'REDDIT-MULTI-5K', 'REDDIT-MULTI-12K', 'reddit_threads', 'tumblr_ct1', 'tumblr_ct2', 'twitch_egos', 'TWITTER-Real-Graph-Partial']
+Synthetic dataset:
+['COLORS-3', 'SYNTHETIC', 'SYNTHETICnew', 'Synthie', 'TRIANGLES']
