@@ -1,4 +1,4 @@
-from train_procedure import get_generalization_error_from_a_dataset
+from train import get_generalization_error_from_a_dataset
 import pandas as pd
 import logging
 from tabulate import tabulate
@@ -15,14 +15,13 @@ from utils import (
     wl_1d_color_count,
     read_file_to_list
 )
-from tqdm import tqdm
 import logging
 import matplotlib.pyplot as plt
 import argparse
 
-from rich import print
-from rich.panel import Panel
-
+from rich import print, Panel
+import wandb
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="increase output verbosity",
@@ -34,7 +33,8 @@ args = parser.parse_args()
 if args.dataset:
     DATAPATH = f'data/{args.dataset}.txt'
 else:
-    DATAPATH = 'data/small_molecules.txt'
+    DATAPATH = 'data/test_dataset.txt'
+
 
 
 def calculate_generalation_error():
@@ -49,13 +49,46 @@ def calculate_generalation_error():
         'std': []
     })
 
+
     for dataset in datasets:
+
+        wandb.init(
+            # set the wandb project where this run will be logged
+            project="bt",
+            # track hyperparameters and run metadata
+            config={
+                "dataset": dataset,
+                "model_name": "GCN",
+                "hidden_dim": 64,
+                "num_epochs": 200,
+                "batch_size": 64,
+                "dropout": 0.5,
+                "learning_rate": 0.01,
+                "patience": 20
+            }
+        )
+
         generalization_error, std = get_generalization_error_from_a_dataset(
-            dataset)
+            dataset_name=wandb.config.dataset,
+            model_name=wandb.config.model_name,
+            hidden_dim=wandb.config.hidden_dim,
+            num_epochs=wandb.config.num_epochs,
+            batch_size=wandb.config.batch_size,
+            dropout=wandb.config.dropout,
+            lr=wandb.config.learning_rate,
+            default_patience=wandb.config.patience
+        )
+
+        wandb.run.summary["generalization_error"] = generalization_error
+        wandb.run.summary["std"] = std
+        wandb.finish()
         df.loc[len(df)] = [dataset, generalization_error, std]
 
+    output_dir = 'results'
+    os.makedirs(output_dir, exist_ok=True)
+
     logger.info(tabulate(df, headers='keys', tablefmt='psql'))
-    df.to_csv(f'generalization_error_{DATAPATH}.csv')
+    df.to_csv(os.path.join(output_dir, f'generalization_error_test.csv'))
 
 
 def calcualte_parameters():
