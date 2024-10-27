@@ -1,0 +1,16 @@
+name: bt
+channels:
+  - pytorch
+  - pyg
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - matplotlib=3.9.2
+  - python=3.12.4
+  - pyg=2.5.2=py312_torch_2.2.0_cu121
+  - pytorch=2.2.0
+  - pytorch-cuda=12.1
+  - wandb=0.18.5
+  - rich=13.7.1
+  - networkx=3.3
