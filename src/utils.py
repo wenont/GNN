@@ -2,15 +2,23 @@ import matplotlib.pyplot as plt
 from torch_geometric.utils.convert import to_networkx
 from torch_geometric.utils import degree
 import networkx as nx
+import networkx.exception as nx_exception
 import time
 import math
 from dataclasses import dataclass
 from torch_geometric.datasets import TUDataset
 import torch
 from rich.progress import track
+import wandb
+import os.path as osp
 
 
-def visualize_graph(G, color):
+class MyFilter(object):
+    def __call__(self, data):
+        return data.num_nodes > 0
+
+
+def visualize_graph(G, color='blue'):
     plt.figure(figsize=(7, 7))
     plt.xticks([])
     plt.yticks([])
@@ -39,28 +47,37 @@ class NetParams:
     batch_size: int
 
 
-def plot_training_results(dataset_name: str, netParams: NetParams, train_accs,
-                          val_accs, train_losses, val_losses, is_temporal=True):
+@dataclass
+class TrainParams:
+    hidden_size: int
+    num_hidden_layers: int
+    num_epochs: int
+    batch_size: int
+    dropout: float
+    lr: float
+    patience: int
+
+
+def plot_training_results(dataset_name: str, train_accs, val_accs, train_losses, 
+                          val_losses, is_temporal=True):
     fig, (ax1, ax2) = plt.subplots(2, 1)
     fig.suptitle(f'Training results on {dataset_name}')
 
-    ax1.plot(range(0, netParams.num_epochs+1, 10), train_accs)
-    ax1.plot(range(0, netParams.num_epochs+1, 10), val_accs)
+    plot_size = len(train_accs)
+
+    ax1.plot(range(0, plot_size), train_accs)
+    ax1.plot(range(0, plot_size), val_accs)
     ax1.set_ylabel('Accuracy')
     ax1.grid(True)
     ax1.legend(['Train', 'Validation'])
 
-    ax2.plot(range(0, netParams.num_epochs+1, 10), train_losses)
-    ax2.plot(range(0, netParams.num_epochs+1, 10), val_losses)
+    ax2.plot(range(0, plot_size), train_losses)
+    ax2.plot(range(0, plot_size), val_losses)
     ax2.grid(True)
     ax2.set_ylabel('Loss')
     ax2.set_xlabel('Epoch number')
     ax2.legend(['Train', 'Validation'])
-    fig.text(
-        0.99, 0.01,
-        f'HIDDEN_CHANNELS={netParams.hidden_channels}, \
-            BATCH_SIZE={netParams.batch_size}',
-        horizontalalignment='right', fontsize='xx-small', c='gray')
+    
     if is_temporal:
         plt.savefig(f'./results/result_temporal.pdf')
     else:
@@ -73,7 +90,7 @@ def get_average_degree(dataset_name, verbose=False):
     Calculate the average degree of the graph
     '''
     dataset = TUDataset(root='data/TUDataset',
-                        name=dataset_name, use_node_attr=True)
+                        name=dataset_name)
     degs = []
 
     for data in track(dataset, description=f'Calculating average degree for {dataset_name}', disable=not verbose):
@@ -83,40 +100,65 @@ def get_average_degree(dataset_name, verbose=False):
     return sum(degs) / len(degs)
 
 
-def get_average_shortest_path(dataset_name, show_errors=False, verbose=False):
+def get_average_shortest_path(dataset_name, verbose=False):
     '''
     Calculate the average shortest path of the graph
     '''
-    dataset = TUDataset(root='data/TUDataset', name=dataset_name,
-                        use_node_attr=True)
+    dataset = TUDataset(
+        root='data/TUDataset', 
+        name=dataset_name,
+        use_node_attr=True,
+        pre_filter=MyFilter(),
+        force_reload=True
+        )
     avg_shortest_paths = []
     num_errors = 0
+    num_null_graphs = 0
 
     for data in track(
         dataset,
-        description=f'Calculating average shortest path for {dataset_name}',
+        description=f'Calculating average shortest path length for {
+            dataset_name}',
         disable=not verbose
     ):
         G = to_networkx(data)
         try:
             avg_shortest_paths.append(nx.average_shortest_path_length(G))
-        except:
-            print(f'Error in {data}')
-            num_errors += 1
+        except nx.exception.NetworkXPointlessConcept as e:
+            print(f'Error: {e}')
+            num_null_graphs += 1
             continue
-    if show_errors:
-        print(f'Number of errors: {num_errors}')
-        print(f'Error rate: {num_errors / len(dataset)}')
+        except nx.NetworkXError:
+            num_errors += 1
+            if G.is_directed():
+                G = G.to_undirected()
+            for C in (G.subgraph(c).copy() for c in nx.connected_components(G)):
+                if len(C) <= 1:
+                    continue
+                avg_shortest_paths.append(nx.average_shortest_path_length(C))
+        # except Exception as e:
+        #     print(f'Error: {e}')
+        #     break
+    if num_errors > 0:
+        print(f'Number and Rate of not strongly connected graph: {
+              num_errors} out of {len(dataset)} | {num_errors / len(dataset)}')
+    if num_null_graphs > 0:
+        print(f'Number and Rate of null graph: {
+            num_null_graphs} out of {len(dataset)} | {num_null_graphs / len(dataset)}')
 
     return sum(avg_shortest_paths) / len(avg_shortest_paths)
 
 
-def get_graph_diameter(dataset_name, show_errors=False, verbose=False):
+def get_graph_diameter(dataset_name, verbose=False):
     '''
     Calculate the diameter of the graph
     '''
-    dataset = TUDataset(root='data/TUDataset',
-                        name=dataset_name, use_node_attr=True)
+    dataset = TUDataset(
+        root='data/TUDataset',
+        name=dataset_name,
+        use_node_attr=True,
+        pre_filter=MyFilter(),
+        force_reload=True)
     diameters = []
     num_errors = 0
 
@@ -125,16 +167,25 @@ def get_graph_diameter(dataset_name, show_errors=False, verbose=False):
             description=f'Calculating graph diameter for {dataset_name}',
             disable=not verbose):
         G = to_networkx(data)
+
         try:
             diameters.append(nx.diameter(G))
-        except:
-            print(f'Error in {data}')
+        except nx.exception.NetworkXError as e:
+            # print(f'[{num_errors}] Error: {e}', end=' | ')
             num_errors += 1
-            continue
-    if show_errors:
-        print(f'Number of errors: {num_errors}')
-        print(f'Error rate: {num_errors / len(dataset)}')
+            if G.is_directed():
+                G = G.to_undirected()
+            for C in (G.subgraph(c).copy() for c in nx.connected_components(G)):
+                if len(C) <= 1:
+                    continue
+                diameters.append(nx.diameter(C))
+        except Exception as e:
+            print(f'Error: {e}')
+            raise
 
+    if num_errors > 0:
+        print(f'Number and Rate of not strongly connected graph: {
+              num_errors} out of {len(dataset)} | {num_errors / len(dataset)}')
     return sum(diameters) / len(diameters)
 
 
@@ -169,10 +220,13 @@ def get_graph_clustering_coefficient(dataset_name, verbose=False):
         description=f'Calculating graph clustering coefficient for {
             dataset_name}',
         disable=not verbose
-
     ):
         G = to_networkx(data)
-        clustering_coefficients.append(nx.average_clustering(G))
+        try:
+            clustering_coefficients.append(nx.average_clustering(G))
+        except Exception as e:
+            # visualize_graph(G)
+            print(f'Error: {e}')
 
     return sum(clustering_coefficients) / len(clustering_coefficients)
 
@@ -264,8 +318,8 @@ def get_average_eigenvector_centrality(dataset_name, verbose=False):
 
     for data in track(
             dataset,
-            description=f'Calculating average eigenvector \
-                          centrality for {dataset_name}',
+            description=f'Calculating average eigenvector centrality for {
+                dataset_name}',
             disable=not verbose):
         G = to_networkx(data)
         eigenvector_centralities.append(sum(nx.eigenvector_centrality(
@@ -319,6 +373,59 @@ def wl_1d_color_count(dataset_name, verbose=False):
     return sum(color_count_sum) / len(color_count_sum)
 
 
+def setup_wandb():
+    sweep_config = {
+        'method': 'random',
+        'metric': {
+            'name': 'val_loss',
+            'goal': 'minimize'
+        },
+        'parameters': {
+            'dataset_name': {
+                'values': ['ENZYMES', 'PROTEINS', 'DD']
+            },
+            'hidden_size': {
+                'values': [32, 64, 128]
+            },
+            'num_hidden_layers': {
+                'values': [2, 4, 6]
+            },
+            'num_epochs': {
+                'values': [100, 200, 300]
+            },
+            'batch_size': {
+                'values': [32, 64, 128]
+            },
+            'dropout': {
+                'values': [0.3, 0.5, 0.7]
+            },
+            'lr': {
+                'distribution': 'uniform',
+                'min': 0.001,
+                'max': 0.1
+            },
+            'default_patience': {
+                'values': [10, 20, 30 ]
+            }
+        }
+    }
+
+    sweep_id = wandb.sweep(sweep_config, project='bt')
+    return sweep_id
+
+def draw_graph(dataset_name):
+    '''
+    Draw the graph
+    '''
+    dataset = TUDataset(root='data/TUDataset',
+                        name=dataset_name, use_node_attr=True)
+    for i, data in enumerate(dataset):
+        G = to_networkx(data)
+        visualize_graph(G, 'blue')
+        if i == 10:
+            break
+
+
 def read_file_to_list(file_path):
     """
     Reads the content from a text file and converts it to a list.
@@ -340,6 +447,23 @@ def read_file_to_list(file_path):
         return []
 
 
+def get_dataset_statistics(dataset_name):
+    dataset = TUDataset(root='data/TUDataset',
+                        name=dataset_name, use_node_attr=True)
+
+    # print(f'Number of graphs: {len(dataset)}')
+    # print(f'Number of nodes: {dataset.data.num_nodes}')
+    # print(f'Number of edges: {dataset.data.num_edges}')
+    # print(f'Number of features: {dataset.num_features}')
+    # print(f'Number of classes: {dataset.num_classes}')
+
+    # for i in range(10):
+    #     data = dataset[i]
+    #     print(data)
+    data = dataset[3].x[0]
+    print(data)
+
+
 class IMDBPreTransform(object):
     def __call__(self, data):
         data.x = degree(data.edge_index[0], data.num_nodes, dtype=torch.long)
@@ -348,11 +472,12 @@ class IMDBPreTransform(object):
 
 
 def load_dataset(dataset_name: str):
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'TUDataset')
     if dataset_name == 'IMDB-BINARY':
-        return TUDataset('data/TUDataset', name='IMDB-BINARY',
+        return TUDataset(path, name='IMDB-BINARY',
                          pre_transform=IMDBPreTransform(), forch_reload=True)
     else:
-        return TUDataset('data/TUDataset', name=dataset_name, use_node_attr=True)
+        return TUDataset(path, name=dataset_name, use_node_attr=True)
 
 
 def get_dataloader(dataset, fold: int, batch_size=64,
@@ -385,3 +510,5 @@ def get_dataloader(dataset, fold: int, batch_size=64,
         test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader
+
+
