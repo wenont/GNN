@@ -62,7 +62,6 @@ def calculate_generalation_error():
                 "hidden_dim": 64,
                 "num_epochs": 200,
                 "batch_size": 64,
-                "dropout": 0.5,
                 "learning_rate": 0.01,
                 "patience": 20
             }
@@ -72,9 +71,7 @@ def calculate_generalation_error():
             dataset_name=wandb.config.dataset,
             model_name=wandb.config.model_name,
             hidden_dim=wandb.config.hidden_dim,
-            num_epochs=wandb.config.num_epochs,
             batch_size=wandb.config.batch_size,
-            dropout=wandb.config.dropout,
             lr=wandb.config.learning_rate,
             default_patience=wandb.config.patience
         )
