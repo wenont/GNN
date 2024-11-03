@@ -51,15 +51,14 @@ class NetParams:
 class TrainParams:
     hidden_size: int
     num_hidden_layers: int
-    num_epochs: int
     batch_size: int
-    dropout: float
-    lr: float
-    patience: int
+    patience_earlystopping: int
+    patience_plateau: int
+    normlization: str
 
 
 def plot_training_results(dataset_name: str, train_accs, val_accs, train_losses, 
-                          val_losses, is_temporal=True):
+                          val_losses, num_fold: int, is_temporal=True):
     fig, (ax1, ax2) = plt.subplots(2, 1)
     fig.suptitle(f'Training results on {dataset_name}')
 
@@ -81,8 +80,7 @@ def plot_training_results(dataset_name: str, train_accs, val_accs, train_losses,
     if is_temporal:
         plt.savefig(f'./results/result_temporal.pdf')
     else:
-        plt.savefig(f'./results/result_{dataset_name}.pdf')
-    plt.show()
+        plt.savefig(f'./results/result_{dataset_name}_on_fold_{num_fold}.pdf')
 
 
 def get_average_degree(dataset_name, verbose=False):
@@ -377,37 +375,40 @@ def setup_wandb():
     sweep_config = {
         'method': 'random',
         'metric': {
-            'name': 'val_loss',
+            'name': 'best_test_acc',
             'goal': 'minimize'
         },
         'parameters': {
             'dataset_name': {
-                'values': ['ENZYMES', 'PROTEINS', 'DD']
+                'values': ['ENZYMES', 'PROTEINS', 'DD', 'COIL-RAG', 'BZR_MD', 'Letter-high']
             },
             'hidden_size': {
-                'values': [32, 64, 128]
+                'values': [32, 64, 128, 256]
             },
             'num_hidden_layers': {
                 'values': [2, 4, 6]
             },
-            'num_epochs': {
-                'values': [100, 200, 300]
-            },
             'batch_size': {
                 'values': [32, 64, 128]
             },
-            'dropout': {
-                'values': [0.3, 0.5, 0.7]
-            },
-            'lr': {
-                'distribution': 'uniform',
-                'min': 0.001,
-                'max': 0.1
-            },
             'default_patience': {
-                'values': [10, 20, 30 ]
+                'values': [100, 200]
+            },
+            'patience_plateau': {
+                'values': [10, 20, 30]
+            },
+            'normlization': {
+                'values': ['batch', 'graph']
             }
         }
+        # normal:
+        # graph normal
+        # batch normal https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.nn.norm.GraphNorm.html?highlight=graphnorm#torch_geometric.nn.norm.GraphNorm
+        
+        # lr 默认的
+        # patience for early stopping 100-200
+        # num_epochs 1000
+        # patience for plateau 10, 20, 30
     }
 
     sweep_id = wandb.sweep(sweep_config, project='bt')
