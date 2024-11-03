@@ -6,7 +6,7 @@ import time
 import wandb
 
 
-def train(dataset_name,  model_name, trainParams: TrainParams, is_wandb=False):
+def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParams, is_wandb=False, num_folds: int = 5):
     """
     This function die the following:
     - Load the dataset, using 80:20 train-val split, without the cross-validation.
@@ -18,23 +18,23 @@ def train(dataset_name,  model_name, trainParams: TrainParams, is_wandb=False):
     # Define dataset and dataloader
     dataset = load_dataset(dataset_name)
 
-    n = len(dataset) // 10
+    # n = len(dataset) // 10
 
-    test_mask = torch.zeros(len(dataset), dtype=torch.bool)
-    test_mask[0:n] = 1
-    val_mask = torch.zeros(len(dataset), dtype=torch.bool)
-    val_mask[n:2*n] = 1
+    # test_mask = torch.zeros(len(dataset), dtype=torch.bool)
+    # test_mask[0:n] = 1
+    # val_mask = torch.zeros(len(dataset), dtype=torch.bool)
+    # val_mask[n:2*n] = 1
 
-    train_dataset = dataset[~test_mask & ~val_mask]
-    val_dataset = dataset[val_mask]
-    test_dataset = dataset[test_mask]
+    # train_dataset = dataset[~test_mask & ~val_mask]
+    # val_dataset = dataset[val_mask]
+    # test_dataset = dataset[test_mask]
 
-    train_loader = DataLoader(
-        train_dataset, batch_size=trainParams.batch_size, shuffle=True)
-    val_loader = DataLoader(
-        val_dataset, batch_size=trainParams.batch_size, shuffle=False)
-    test_loader = DataLoader(
-        test_dataset, batch_size=trainParams.batch_size, shuffle=False)
+    # train_loader = DataLoader(
+    #     train_dataset, batch_size=trainParams.batch_size, shuffle=True)
+    # val_loader = DataLoader(
+    #     val_dataset, batch_size=trainParams.batch_size, shuffle=False)
+    # test_loader = DataLoader(
+    #     test_dataset, batch_size=trainParams.batch_size, shuffle=False)
 
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -47,13 +47,10 @@ def train(dataset_name,  model_name, trainParams: TrainParams, is_wandb=False):
         hidden_channels=trainParams.hidden_size,
         out_channels=dataset.num_classes,
         num_hidden_layers=trainParams.num_hidden_layers,
-        dropout=trainParams.dropout
+        norm=trainParams.normlization
     ).to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=trainParams.lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.7, patience=5, min_lr=0.0001)
 
     def train(loader):
         model.train()
@@ -90,61 +87,117 @@ def train(dataset_name,  model_name, trainParams: TrainParams, is_wandb=False):
             correct += int((pred == data.y).sum())
         return correct / len(loader.dataset)
 
-    val_loss = val(val_loader)
-    val_acc = test(val_loader)
-    print(f'Initial val loss: {
-          val_loss:.4f}, Initial val accuracy: {val_acc:.4f}')
-
     # Train model
     train_losses = []
     val_losses = []
     train_accs = []
     val_accs = []
+    best_test_acces = []
 
-    best_val_loss, best_val_acc = float('inf'), 0
+    for i in range(num_folds):
+        model.reset_parameters()
+        optimizer = torch.optim.Adam(model.parameters(), weight_decay=1e-4)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=trainParams.patience_plateau)
+        print(f'On Fold {i+1}')
 
-    start = time.time()
-    default_patience = trainParams.patience
-    for epoch in range(trainParams.num_epochs+1):
-        train_loss = train(train_loader)
-        val_loss = val(train_loader)
-        train_acc = test(train_loader)
-        val_acc = test(val_loader)
-        scheduler.step(val_loss)
+        test_mask = torch.zeros(len(dataset), dtype=torch.bool)
 
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
-        val_accs.append(val_acc)
-        train_accs.append(train_acc)
+        n = len(dataset) // num_folds
+        test_mask[i*n:(i+1)*n] = 1
+        val_mask = torch.zeros(len(dataset), dtype=torch.bool)
 
-        if is_wandb:
-            wandb.log({
-                "train_loss": train_loss,
-                "val_loss": val_loss,
-                "train_acc": train_acc,
-                "val_acc": val_acc,
-                "epoch": epoch
-            })
-
-        if val_loss < best_val_loss:
-            test_acc = test(test_loader)
-            best_val_loss = val_loss
-            best_test_acc = test_acc
-            patience = default_patience
+        if i == num_folds - 1:
+            val_mask[0:n] = 1
         else:
-            patience -= 1
-            if patience == 0:
-                break
-        if epoch % 10 == 0:
-            print(f'Epoch: {epoch:03d} ({timeSince(start)}), Train Loss: {train_loss:.4f}, Val Loss: {
-                  val_loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}')
+            val_mask[(i+1)*n:(i+2)*n] = 1
+
+        train_dataset = dataset[~test_mask & ~val_mask]
+        val_dataset = dataset[val_mask]
+        test_dataset = dataset[test_mask]
+
+        train_loader = DataLoader(
+            train_dataset, batch_size=trainParams.batch_size, shuffle=True)
+        val_loader = DataLoader(
+            val_dataset, batch_size=trainParams.batch_size, shuffle=False)
+        test_loader = DataLoader(
+            test_dataset, batch_size=trainParams.batch_size, shuffle=False)
+
+        best_val_loss, best_val_acc = float('inf'), 0
+
+        start = time.time()
+        default_patience = trainParams.patience_earlystopping
+        for epoch in range(1000):
+            train_loss = train(train_loader)
+            val_loss = val(train_loader)
+            train_acc = test(train_loader)
+            val_acc = test(val_loader)
+            scheduler.step(val_loss)
+
+            train_losses.append(train_loss)
+            val_losses.append(val_loss)
+            val_accs.append(val_acc)
+            train_accs.append(train_acc)
+
+            # if is_wandb:
+            #     wandb.log({
+            #         f"train_loss_{i}_fold": train_loss,
+            #         f"val_loss_{i}_fold": val_loss,
+            #         f"train_acc_{i}_fold": train_acc,
+            #         f"val_acc_{i}_fold": val_acc,
+            #         f"epoch_on_{i}_fold": epoch
+            #     })
+
+            if val_loss < best_val_loss:
+                test_acc = test(test_loader)
+                best_val_loss = val_loss
+                best_test_acc = test_acc
+                patience = default_patience
+            else:
+                patience -= 1
+                if patience == 0:
+                    break
+            if epoch % 10 == 0:
+                print(f'Epoch: {epoch:03d} ({timeSince(start)}), Train Loss: {train_loss:.4f}, Val Loss: {
+                    val_loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}')
+            
+            best_test_acces.append(best_test_acc)
+        
+        
+        print('Plotting the training results...')
+        if is_wandb:
+            wandb.log({f"loss_{i+1}_fold": wandb.plot.line_series(
+                    xs=range(len(train_losses)), ys=[train_losses, val_losses], 
+                    keys=["train_loss", "val_loss"],
+                    title=f"Loss on fold {i+1}",
+                    xname="Epochs"
+                )
+            })
+            wandb.log({f"acc_{i+1}_fold": wandb.plot.line_series(
+                    xs=range(len(train_accs)), ys=[train_accs, val_accs], 
+                    keys=["train_acc", "val_acc"],
+                    title=f"Accuracy on fold {i+1}",
+                    xname="Epochs"
+                )
+            })
+        else:
+            plot_training_results(dataset_name=dataset_name, train_accs=train_accs, val_accs=val_accs, 
+                                train_losses=train_losses, val_losses=val_losses, num_fold=i+1)
+            
+        train_losses.clear()
+        val_losses.clear()
+        train_accs.clear()
+        val_accs.clear()
+
+    # Get average test accuracy
+    best_test_acces = torch.tensor(best_test_acces)
+    best_test_acc = best_test_acces.mean().item()
+
+    if is_wandb:
+        wandb.run.summary['best_test_acc'] = best_test_acc
 
     print(f'Best validation loss on {dataset_name}: {
           best_val_loss:.4f} with the test accuracy: {best_test_acc:.4f}\n')
 
-    if is_wandb is False:
-        print('Plotting the training results...')
-        plot_training_results(dataset_name, train_accs, val_accs, train_losses, val_losses)
     return best_val_loss
 
 
@@ -152,11 +205,11 @@ def hyperparameter_tuning(config=None):
     with wandb.init(config=config):
         config = wandb.config
         trainParams = TrainParams(
-            config.hidden_size, config.num_hidden_layers, config.num_epochs, config.batch_size, config.dropout, config.lr, config.default_patience
+            config.hidden_size, config.num_hidden_layers, config.batch_size, config.default_patience, config.patience_plateau, config.normlization
         )
-        train(config.dataset_name, 'GCN', trainParams, is_wandb=True)
+        train_procedure(config.dataset_name, 'GCN', trainParams, is_wandb=True)
 
-def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidden_dim=64, num_epochs=200, batch_size=64, dropout=0.5, lr=0.01, default_patience=20, split=False):
+def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidden_dim=64, batch_size=64, lr=0.01, default_patience=20, split=False):
     # Load dataset
     # dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     # dataset = dataset.shuffle()
@@ -172,7 +225,6 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
         in_channels=dataset.num_features,
         hidden_channels=hidden_dim,
         out_channels=dataset.num_classes,
-        dropout=dropout
     ).to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -259,7 +311,7 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
 
         start = time.time()
         patience = default_patience
-        for epoch in range(1, num_epochs+1):
+        for epoch in range(1000):
             train_loss = train(train_loader)
             val_loss = val(val_loader)
             train_acc = test(train_loader)
@@ -322,12 +374,10 @@ if __name__ == '__main__':
     #   num_hidden_layers=4,
     #   num_epochs=200,
     #   batch_size=64,
-    #   dropout=0.5,
-    #   lr=0.001,
     #   patience=20
     trainParams = TrainParams(
-        128, 3, 200, 64, 0.5, 0.001, 5
+        128, 3, 200, 64, 5
     )
     model_name = 'GCN'
     dataset_name = 'DD'
-    train(dataset_name, model_name, trainParams)
+    train_procedure(dataset_name, model_name, trainParams)
