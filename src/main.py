@@ -11,7 +11,6 @@ from utils import (
     get_average_closeness_centrality,
     get_average_betweenness_centrality,
     get_average_eigenvector_centrality,
-    get_dataset_statistics,
     wl_1d_color_count,
     read_file_to_list
 )
@@ -174,15 +173,6 @@ def get_correlation():
         df2['Ave. shortest path'])
     print(f'Correlation of ave. shortest path and ave. generalization error: {
           correlation2}')
-
-
-def foo():
-    DATAPATH = 'data/test_dataset.txt'
-
-    datasets = read_file_to_list(DATAPATH)
-
-    for dataset in datasets:
-        get_dataset_statistics(dataset)
 
 
 def interactive_mode():
