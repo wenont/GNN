@@ -115,8 +115,7 @@ def get_average_shortest_path(dataset_name, verbose=False):
 
     for data in track(
         dataset,
-        description=f'Calculating average shortest path length for {
-            dataset_name}',
+        description=f'Calculating average shortest path length for {dataset_name}',
         disable=not verbose
     ):
         G = to_networkx(data)
