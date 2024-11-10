@@ -30,4 +30,4 @@ for dataset_name in dataset_list:
 
 	# run the sweep
 	print('Running sweep')
-	wandb.agent(sweep_id, hyperparameter_tuning, count=1, project=project_name)
+	wandb.agent(sweep_id, hyperparameter_tuning, count=432, project=project_name)
