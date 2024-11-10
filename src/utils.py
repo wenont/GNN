@@ -137,11 +137,9 @@ def get_average_shortest_path(dataset_name, verbose=False):
         #     print(f'Error: {e}')
         #     break
     if num_errors > 0:
-        print(f'Number and Rate of not strongly connected graph: {
-              num_errors} out of {len(dataset)} | {num_errors / len(dataset)}')
+        print(f'Number and Rate of not strongly connected graph: {num_errors} out of {len(dataset)} | {num_errors / len(dataset)}')
     if num_null_graphs > 0:
-        print(f'Number and Rate of null graph: {
-            num_null_graphs} out of {len(dataset)} | {num_null_graphs / len(dataset)}')
+        print(f'Number and Rate of null graph: {num_null_graphs} out of {len(dataset)} | {num_null_graphs / len(dataset)}')
 
     return sum(avg_shortest_paths) / len(avg_shortest_paths)
 
@@ -181,8 +179,7 @@ def get_graph_diameter(dataset_name, verbose=False):
             raise
 
     if num_errors > 0:
-        print(f'Number and Rate of not strongly connected graph: {
-              num_errors} out of {len(dataset)} | {num_errors / len(dataset)}')
+        print(f'Number and Rate of not strongly connected graph: {num_errors} out of {len(dataset)} | {num_errors / len(dataset)}')
     return sum(diameters) / len(diameters)
 
 
@@ -214,8 +211,7 @@ def get_graph_clustering_coefficient(dataset_name, verbose=False):
 
     for data in track(
         dataset,
-        description=f'Calculating graph clustering coefficient for {
-            dataset_name}',
+        description=f'Calculating graph clustering coefficient for {dataset_name}',
         disable=not verbose
     ):
         G = to_networkx(data)
@@ -275,8 +271,7 @@ def get_average_closeness_centrality(dataset_name, verbose=False):
 
     for data in track(
             dataset,
-            description=f'Calculating average closeness centrality for {
-                dataset_name}',
+            description=f'Calculating average closeness centrality for {dataset_name}',
             disable=not verbose):
         G = to_networkx(data)
         closeness_centralities.append(sum(nx.closeness_centrality(G).values())
@@ -295,8 +290,7 @@ def get_average_betweenness_centrality(dataset_name, verbose=False):
 
     for data in track(
             dataset,
-            description=f'Calculating average betweenness centrality for {
-                dataset_name}',
+            description=f'Calculating average betweenness centrality for {dataset_name}',
             disable=not verbose):
         G = to_networkx(data)
         betweenness_centralities.append(sum(nx.betweenness_centrality(G).values())
@@ -315,8 +309,7 @@ def get_average_eigenvector_centrality(dataset_name, verbose=False):
 
     for data in track(
             dataset,
-            description=f'Calculating average eigenvector centrality for {
-                dataset_name}',
+            description=f'Calculating average eigenvector centrality for {dataset_name}',
             disable=not verbose):
         G = to_networkx(data)
         eigenvector_centralities.append(sum(nx.eigenvector_centrality(
@@ -335,8 +328,7 @@ def wl_1d_color_count(dataset_name, verbose=False):
 
     for data in track(
             dataset,
-            description=f'Calculating average number of coloring in 1WL for {
-                dataset_name}',
+            description=f'Calculating average number of coloring in 1WL for {dataset_name}',
             disable=not verbose):
         Graph = to_networkx(data)
         # Initialize all nodes with the same color
