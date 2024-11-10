@@ -1,6 +1,6 @@
 import torch
 from torch_geometric.loader import DataLoader
-from utils import timeSince, plot_training_results, NetParams, TrainParams, load_dataset, setup_wandb
+from utils import timeSince, plot_training_results, NetParams, TrainParams, load_dataset, setup_wandb_sweep
 from net import get_model
 import time
 import wandb
@@ -8,34 +8,15 @@ import wandb
 
 def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParams, is_wandb=False, num_folds: int = 5):
     """
-    This function die the following:
-    - Load the dataset, using 80:20 train-val split, without the cross-validation.
-    - Train the model
-    - Get the training result of the dataset, including the training loss, validation loss, training accuracy, and
-    - Plot the results.
+    Train a model on a dataset with the given hyperparameters
+    :param dataset_name: Name of the dataset
+    :param model_name: Name of the model
+    :param trainParams: Hyperparameters for training
+    :param is_wandb: Whether to use wandb or not, default is False
+    :param num_folds: Number of folds for cross-validation
     """
 
-    # Define dataset and dataloader
     dataset = load_dataset(dataset_name)
-
-    # n = len(dataset) // 10
-
-    # test_mask = torch.zeros(len(dataset), dtype=torch.bool)
-    # test_mask[0:n] = 1
-    # val_mask = torch.zeros(len(dataset), dtype=torch.bool)
-    # val_mask[n:2*n] = 1
-
-    # train_dataset = dataset[~test_mask & ~val_mask]
-    # val_dataset = dataset[val_mask]
-    # test_dataset = dataset[test_mask]
-
-    # train_loader = DataLoader(
-    #     train_dataset, batch_size=trainParams.batch_size, shuffle=True)
-    # val_loader = DataLoader(
-    #     val_dataset, batch_size=trainParams.batch_size, shuffle=False)
-    # test_loader = DataLoader(
-    #     test_dataset, batch_size=trainParams.batch_size, shuffle=False)
-
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}')
@@ -138,15 +119,6 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
             val_accs.append(val_acc)
             train_accs.append(train_acc)
 
-            # if is_wandb:
-            #     wandb.log({
-            #         f"train_loss_{i}_fold": train_loss,
-            #         f"val_loss_{i}_fold": val_loss,
-            #         f"train_acc_{i}_fold": train_acc,
-            #         f"val_acc_{i}_fold": val_acc,
-            #         f"epoch_on_{i}_fold": epoch
-            #     })
-
             if val_loss < best_val_loss:
                 test_acc = test(test_loader)
                 best_val_loss = val_loss
@@ -195,10 +167,9 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
     if is_wandb:
         wandb.run.summary['best_test_acc'] = best_test_acc
 
-    print(f'Best validation loss on {dataset_name}: {
-          best_val_loss:.4f} with the test accuracy: {best_test_acc:.4f}\n')
+    print(f'Best test accuracy on {dataset_name}: {best_test_acc:.4f}\n')
 
-    return best_val_loss
+    return best_test_acc
 
 
 def hyperparameter_tuning(config=None):
