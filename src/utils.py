@@ -371,16 +371,17 @@ def wl_1d_color_count(dataset_name, verbose=False):
     return sum(color_count_sum) / len(color_count_sum)
 
 
-def setup_wandb():
+def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
     sweep_config = {
-        'method': 'random',
+        'method': 'bayes',
+        'name': dataset_name,
         'metric': {
-            'name': 'best_test_acc',
-            'goal': 'minimize'
+            'goal': 'minimize',
+            'name': 'best_test_acc'
         },
         'parameters': {
             'dataset_name': {
-                'values': ['ENZYMES', 'PROTEINS', 'DD', 'COIL-RAG', 'BZR_MD', 'Letter-high']
+                'value': dataset_name
             },
             'hidden_size': {
                 'values': [32, 64, 128, 256]
@@ -400,18 +401,17 @@ def setup_wandb():
             'normlization': {
                 'values': ['batch', 'graph']
             }
+        },
+        'early_terminate': {
+            'type': 'hyperband',
+            'min_iter': 10,
+            's': 0,
+            'eta': 3,
+            'max_iter': 81
         }
-        # normal:
-        # graph normal
-        # batch normal https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.nn.norm.GraphNorm.html?highlight=graphnorm#torch_geometric.nn.norm.GraphNorm
-        
-        # lr 默认的
-        # patience for early stopping 100-200
-        # num_epochs 1000
-        # patience for plateau 10, 20, 30
     }
 
-    sweep_id = wandb.sweep(sweep_config, project='bt')
+    sweep_id = wandb.sweep(sweep_config, project=project_name)
     return sweep_id
 
 def draw_graph(dataset_name):
@@ -446,6 +446,9 @@ def read_file_to_list(file_path):
     except FileNotFoundError:
         print(f"File not found: {file_path}")
         return []
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
 
 
 def get_dataset_statistics(dataset_name):
@@ -476,7 +479,7 @@ def load_dataset(dataset_name: str):
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'TUDataset')
     if dataset_name == 'IMDB-BINARY':
         return TUDataset(path, name='IMDB-BINARY',
-                         pre_transform=IMDBPreTransform(), forch_reload=True)
+                         pre_transform=IMDBPreTransform())
     else:
         return TUDataset(path, name=dataset_name, use_node_attr=True)
 
@@ -487,29 +490,30 @@ def get_dataloader(dataset, fold: int, batch_size=64,
     split the dataset into 10 fold, take one into dataloader and return that dataloader.
     If 10 fold validation is not enabled, return put all data into dataloader
     """
+    raise NotImplementedError
 
-    if is_10_fold_validation_enabled is False:
-        return DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    # if is_10_fold_validation_enabled is False:
+    #     return DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    n = len(dataset) // 10
-    test_mask[fold*n:(fold+1)*n] = 1
-    val_mask = torch.zeros(len(dataset), dtype=torch.bool)
+    # n = len(dataset) // 10
+    # test_mask[fold*n:(fold+1)*n] = 1
+    # val_mask = torch.zeros(len(dataset), dtype=torch.bool)
 
-    if fold == 9:
-        val_mask[0:n] = 1
-    else:
-        val_mask[(fold+1)*n:(fold+2)*n] = 1
+    # if fold == 9:
+    #     val_mask[0:n] = 1
+    # else:
+    #     val_mask[(fold+1)*n:(fold+2)*n] = 1
 
-    train_dataset = dataset[~test_mask & ~val_mask]
-    val_dataset = dataset[val_mask]
-    test_dataset = dataset[test_mask]
+    # train_dataset = dataset[~test_mask & ~val_mask]
+    # val_dataset = dataset[val_mask]
+    # test_dataset = dataset[test_mask]
 
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, shuffle=False)
+    # train_loader = DataLoader(
+    #     train_dataset, batch_size=batch_size, shuffle=True)
+    # val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    # test_loader = DataLoader(
+    #     test_dataset, batch_size=batch_size, shuffle=False)
 
-    return train_loader, val_loader, test_loader
+    # return train_loader, val_loader, test_loader
 
 
