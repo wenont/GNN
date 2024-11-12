@@ -394,9 +394,9 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
                 'values': ['batch', 'graph']
             },
             'learning_rate': {
-                'distribution': 'log_uniform',
-                'min': 1e-5,
-                'max': 1e-2
+                'distribution': 'uniform',
+                'min': 0.0001,
+                'max': 0.01
             }
         },
         'early_terminate': {
