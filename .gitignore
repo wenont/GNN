@@ -1,6 +1,7 @@
 data/TUDataset/
 __pycache__/
 playground/
+.vscode/
 
 # latex
 *.sty
