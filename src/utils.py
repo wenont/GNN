@@ -391,6 +391,11 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
             },
             'normlization': {
                 'values': ['batch', 'graph']
+            },
+            'learning_rate': {
+                'distribution': 'log_uniform',
+                'min': 1e-5,
+                'max': 1e-2
             }
         },
         'early_terminate': {
@@ -399,7 +404,8 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
             's': 0,
             'eta': 3,
             'max_iter': 81
-        }
+        },
+        'run_cap': 300
     }
 
     sweep_id = wandb.sweep(sweep_config, project=project_name)
