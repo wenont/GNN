@@ -77,7 +77,7 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
 
     for i in range(num_folds):
         model.reset_parameters()
-        optimizer = torch.optim.Adam(model.parameters(), weight_decay=1e-4)
+        optimizer = torch.optim.Adam(model.parameters(), lr=trainParams.learning_rate, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=trainParams.patience_plateau)
         print(f'On Fold {i+1}')
 
@@ -176,7 +176,7 @@ def hyperparameter_tuning(config=None):
     with wandb.init(config=config):
         config = wandb.config
         trainParams = TrainParams(
-            config.hidden_size, config.num_hidden_layers, config.batch_size, config.default_patience, config.patience_plateau, config.normlization
+            config.hidden_size, config.num_hidden_layers, config.batch_size, config.default_patience, config.patience_plateau, config.normlization, config.learning_rate
         )
         train_procedure(config.dataset_name, 'GCN', trainParams, is_wandb=True)
 

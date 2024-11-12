@@ -55,6 +55,7 @@ class TrainParams:
     patience_earlystopping: int
     patience_plateau: int
     normlization: str
+    learning_rate: float
 
 
 def plot_training_results(dataset_name: str, train_accs, val_accs, train_losses, 
