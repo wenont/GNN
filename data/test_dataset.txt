@@ -1,4 +1,3 @@
-ENZYMES
-KKI
-OHSU
-Peking_1
+SYNTHETIC
+SYNTHETICnew
+Synthie
