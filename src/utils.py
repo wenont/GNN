@@ -406,7 +406,7 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
             'eta': 3,
             'max_iter': 81
         },
-        'run_cap': 300
+        'run_cap': 100
     }
 
     sweep_id = wandb.sweep(sweep_config, project=project_name)
