@@ -1,6 +1,6 @@
 import torch
 from torch_geometric.loader import DataLoader
-from utils import timeSince, plot_training_results, NetParams, TrainParams, load_dataset, setup_wandb_sweep
+from utils import timeSince, plot_training_results, TrainParams, load_dataset
 from net import get_model
 import time
 import wandb
@@ -75,6 +75,18 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
     val_accs = []
     best_test_acces = []
 
+    if is_wandb is False and num_folds == 1:
+        optimizer = torch.optim.Adam(model.parameters(), lr=trainParams.learning_rate, weight_decay=1e-4)
+        print(f'Testing if the dataset is running correctly')
+
+        dataloader = DataLoader(dataset, batch_size=trainParams.batch_size, shuffle=True)
+        
+        for epoch in range(10):
+            loss = train(dataloader)
+            print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}')
+        return
+
+
     for i in range(num_folds):
         model.reset_parameters()
         optimizer = torch.optim.Adam(model.parameters(), lr=trainParams.learning_rate, weight_decay=1e-4)
@@ -114,10 +126,6 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
             val_acc = test(val_loader)
             scheduler.step(val_loss)
 
-            train_losses.append(train_loss)
-            val_losses.append(val_loss)
-            val_accs.append(val_acc)
-            train_accs.append(train_acc)
 
             if val_loss < best_val_loss:
                 test_acc = test(test_loader)
@@ -129,6 +137,10 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
                 if patience == 0:
                     break
             if epoch % 10 == 0:
+                train_losses.append(train_loss)
+                val_losses.append(val_loss)
+                val_accs.append(val_acc)
+                train_accs.append(train_acc)
                 print(f'Epoch: {epoch:03d} ({timeSince(start)}), Train Loss: {train_loss:.4f}, Val Loss: {
                     val_loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}')
             
@@ -138,14 +150,14 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
         print('Plotting the training results...')
         if is_wandb:
             wandb.log({f"loss_{i+1}_fold": wandb.plot.line_series(
-                    xs=range(len(train_losses)), ys=[train_losses, val_losses], 
+                    xs=[i * 10 for i in range(len(train_losses))], ys=[train_losses, val_losses], 
                     keys=["train_loss", "val_loss"],
                     title=f"Loss on fold {i+1}",
                     xname="Epochs"
                 )
             })
             wandb.log({f"acc_{i+1}_fold": wandb.plot.line_series(
-                    xs=range(len(train_accs)), ys=[train_accs, val_accs], 
+                    xs=[i * 10 for i in range(len(train_accs))], ys=[train_accs, val_accs], 
                     keys=["train_acc", "val_acc"],
                     title=f"Accuracy on fold {i+1}",
                     xname="Epochs"
@@ -170,6 +182,18 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
     print(f'Best test accuracy on {dataset_name}: {best_test_acc:.4f}\n')
 
     return best_test_acc
+
+def train_test(dataset_name: str, model_name: str = 'GCN'):
+    hidden_size = 128
+    num_hidden_layers = 2
+    batch_size = 64
+    patience = 20
+    patience_plateau = 5
+    normlization = 'batch'
+    learning_rate = 0.001
+
+    trainParams = TrainParams(hidden_size, num_hidden_layers, batch_size, patience, patience_plateau, normlization, learning_rate)
+    train_procedure(dataset_name, model_name, trainParams, is_wandb=False, num_folds=1)
 
 
 def hyperparameter_tuning(config=None):
@@ -335,20 +359,4 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
 
 
 if __name__ == '__main__':
-    # sweep_id = setup_wandb()
-    # print(sweep_id)
-    # sweep_id = 'xd3livh8'
-    # wandb.agent(sweep_id, hyperparameter_tuning, count=5, project='bt')
-
-
-    #   hidden_size=128,
-    #   num_hidden_layers=4,
-    #   num_epochs=200,
-    #   batch_size=64,
-    #   patience=20
-    trainParams = TrainParams(
-        128, 3, 200, 64, 5
-    )
-    model_name = 'GCN'
-    dataset_name = 'DD'
-    train_procedure(dataset_name, model_name, trainParams)
+    train_test('AIDS', 'MPNN')
