@@ -11,6 +11,7 @@ import torch
 from rich.progress import track
 import wandb
 import os.path as osp
+import pandas as pd
 
 
 class MyFilter(object):
@@ -368,7 +369,7 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
         'method': 'bayes',
         'name': dataset_name,
         'metric': {
-            'goal': 'minimize',
+            'goal': 'maximize',
             'name': 'best_test_acc'
         },
         'parameters': {
@@ -406,7 +407,7 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
             'eta': 3,
             'max_iter': 81
         },
-        'run_cap': 100
+        'run_cap': 50
     }
 
     sweep_id = wandb.sweep(sweep_config, project=project_name)
@@ -514,4 +515,26 @@ def get_dataloader(dataset, fold: int, batch_size=64,
 
     # return train_loader, val_loader, test_loader
 
+def get_best_run(project_name: str, dataset_name: str):
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'dataset.csv')
+    df = pd.read_csv(path)
+    if df[(df['name'] == dataset_name) & (df['project'] == project_name)].empty:
+        return None
+    else:
+        sweep_id = df[df['name'] == dataset_name]['sweep_id'].values[0]
 
+    print(sweep_id)
+
+    api = wandb.Api()
+    entity = 'wensz-rwth-aachen-university'
+    sweep = api.sweep(f"{entity}/{project_name}/{sweep_id}")
+    best_run = sweep.best_run()
+    best_run_config = best_run.config
+    print(f'Best run name: {best_run.name} with id: {best_run.id}')
+    return best_run_config
+
+
+if __name__ == '__main__':
+    # test get_best_run
+    best_run = get_best_run('bt', 'DD')
+    print(best_run)
