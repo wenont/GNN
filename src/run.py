@@ -26,7 +26,7 @@ for dataset_name in dataset_list:
 		df.to_csv(path, index=False)
 	else:
 		print('Dataset found')
-		sweep_id = df[df['name'] == dataset_name]['sweep_id'].values[0]
+		sweep_id = df[(df['name'] == dataset_name) & (df['project'] == project_name)]['sweep_id'].values[0]
 		print(f'Sweep id: {sweep_id}')
 
 	# run the sweep
