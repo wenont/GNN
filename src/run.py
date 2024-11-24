@@ -5,7 +5,8 @@ import os.path as osp
 import pandas as pd
 
 
-project_name = 'bt'
+project_name = 'bt_GCN'
+# project_name = 'bt' 
 path = osp.join(osp.dirname(__file__), '..', 'data', 'test_dataset.txt')
 dataset_list = read_file_to_list(path)
 
@@ -16,7 +17,7 @@ for dataset_name in dataset_list:
 
 	# check if the df contains a row with the name of the dataset
 	print('Checking if the sweep exists')
-	if df[df['name'] == dataset_name].empty:
+	if df[(df['name'] == dataset_name) & (df['project'] == project_name)].empty:
 		print('Creating sweep')
 		sweep_id = setup_wandb_sweep(project_name, dataset_name)
 		print(f'Sweep id: {sweep_id}')
