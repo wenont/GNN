@@ -480,7 +480,11 @@ def load_dataset(dataset_name: str):
         return TUDataset(path, name='IMDB-BINARY',
                          pre_transform=IMDBPreTransform())
     else:
-        return TUDataset(path, name=dataset_name, use_node_attr=True)
+        dataset = TUDataset(path, name=dataset_name, use_node_attr=True)
+        if len(dataset) > 4000:
+            dataset = dataset.shuffle()[:4000]
+        print(f'Name: {dataset_name} | Number of graphs: {len(dataset)}')
+        return dataset
 
 
 def get_dataloader(dataset, fold: int, batch_size=64,
