@@ -40,7 +40,7 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
             data = data.to(device)
             optimizer.zero_grad()
             out = model(data.x, data.edge_index, data.batch)
-            loss = criterion(out, data.y)
+            loss = criterion(out, data.y.long())
             loss.backward()
             loss_all += loss.item() * data.num_graphs
             optimizer.step()
@@ -54,7 +54,7 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
         for data in loader:
             data = data.to(device)
             out = model(data.x, data.edge_index, data.batch)
-            loss = criterion(out, data.y)
+            loss = criterion(out, data.y.long())
             loss_all += loss.item() * data.num_graphs
         return loss_all/len(loader.dataset)
 
@@ -65,7 +65,7 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
         for data in loader:
             data = data.to(device)
             pred = model(data.x, data.edge_index, data.batch).argmax(dim=1)
-            correct += int((pred == data.y).sum())
+            correct += int((pred == data.y.long()).sum())
         return correct / len(loader.dataset)
 
     # Train model
