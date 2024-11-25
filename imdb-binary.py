@@ -12,7 +12,6 @@ import time
 
 
 dataset_name = 'IMDB-BINARY'
-num_epochs = 200
 hidden_channels = 64
 batch_size = 64
 
@@ -105,7 +104,7 @@ val_accs = []
 best_val_loss, best_val_acc = float('inf'), 0
 
 start = time.time()
-for epoch in range(num_epochs+1):
+for epoch in range(1000):
     train_loss = train(train_loader)
     val_loss = val(train_loader)
     train_acc = test(train_loader)
