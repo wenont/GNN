@@ -30,5 +30,9 @@ for dataset_name in dataset_list:
 		print(f'Sweep id: {sweep_id}')
 
 	# run the sweep
+	sweep_state = wandb.Api().sweep(f'wensz-rwth-aachen-university/{project_name}/{sweep_id}').state
+	if sweep_state == 'FINISHED':
+		print('Sweep already finished')
+		continue
 	print('Running sweep')
 	wandb.agent(sweep_id, hyperparameter_tuning, count=432, project=project_name)
