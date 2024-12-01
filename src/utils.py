@@ -482,7 +482,7 @@ def load_dataset(dataset_name: str):
     else:
         dataset = TUDataset(path, name=dataset_name, use_node_attr=True)
         if len(dataset) > 4000:
-            dataset = dataset.shuffle()[:4000]
+            dataset = dataset.shuffle()[:4000] # get random 4000 graphs
         print(f'Name: {dataset_name} | Number of graphs: {len(dataset)}')
         return dataset
 
