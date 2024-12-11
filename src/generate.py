@@ -1,50 +1,61 @@
-'''
-This file is used to generate the dataset for the model.
-
-The dataset has the following structure:
-- The dataset contains 100 samples.
-- Each sample is a graph.
-- Each graph has two groups of node, both groups have 100 nodes.
-- There are no edges between nodes in a graph.
-- The node features are three dimensional. 
-- the first two dimensions are the position of the node, sampled from a normal distribution with mean 1 and standard deviation 1 for the first group, and mean -1 and standard deviation 1 for the second group.
-- the third dimension is the group of the node, 0 for the first group, 1 for the second group.
-
-
-How to generate the dataset:
-- Use the pytorch geometric library to generate the dataset.
-'''
 import argparse
-from ast import parse
 import torch
-import torch_geometric
 from torch_geometric.data import Data, DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
+
 def generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p0, p1):
     '''
-    Generate the dataset. The generated dataset has the following structure:
-    - The dataset contains 100 samples.
-    - Each sample is a graph.
-    - Each graph has two groups of node, both groups have 100 nodes.
-    - There are no edges between nodes in a graph.
-    - The node features are three dimensional. 
-    - the first two dimensions are the position of the node, sampled from a normal distribution with mean 1 and standard deviation 1 for the first group, and mean -1 and standard deviation 1 for the second group.
-    - the third dimension is the group of the node, 0 for the first group, 1 for the second group.
+    Generate a synthetic dataset of graphs with specific properties and labels.
 
-    For the node connections:
-    - The probability of connection between nodes in the same group is p0.
-    - The probability of connection between nodes in different groups is p1.
+    The dataset contains `num_samples` graphs, where each graph has two groups of nodes.
+    Nodes have three-dimensional features, and edges are created based on specified
+    probabilities.
+
+    Dataset structure:
+    - Each graph has `2 * num_nodes_per_group` nodes, split equally into two groups.
+    - Nodes in the same group have features with positions sampled from a normal 
+      distribution:
+        - Group 1: mean `mean_group1` (default: (1, 1)), standard deviation `std`.
+        - Group 2: mean `mean_group2` (default: (-1, -1)), standard deviation `std`.
+    - The third dimension of the node feature indicates the group (0 for Group 1, 1 for Group 2).
+
+    Edge connections:
+    - Nodes within the same group are connected with probability `p0`.
+    - Nodes from different groups are connected with probability `p1`.
+
+    Graph labels:
+    - A graph label is `0` if the number of inter-group connections exceeds intra-group connections.
+    - Otherwise, the label is `1`.
+
+    Parameters:
+        n0 (int): Number of graphs in the dataset.
+        n1 (int): Number of graphs in the dataset.
+        mu0 (list): Mean of the node features for Group 1.
+        mu1 (list): Mean of the node features for Group 2.
+        sigma0 (float): Standard deviation of the node features.
+        sigma1 (float): Standard deviation of the node features.
+        p0 (float): Probability of connection between nodes in the same group.
+        p1 (float): Probability of connection between nodes in different groups.
+
+
+    Returns:
+        list: A list of PyTorch Geometric `Data` objects, each representing a graph
+        in the dataset.    
     
-    For the graph labels:
-    - The graph label is 0 if the graph has more inter-group connections than intra-group connections.
+
+    Example:
+        >>> dataset = generate_dataset(100, 100, [-10, 0], [10, 0], 1, 1, 0.1, 0.1)
+        >>> print(len(dataset))
+        100
+        >>> visualize_graph(dataset[0])
     '''
     # Generate the dataset
 
     dataset = []
-    for i in range(1):
+    for i in range(1): # <------ the number of graphs in the dataset
         # Generate the node features
         x0 = np.random.multivariate_normal(mu0, sigma0 * np.eye(2), n0)
         x1 = np.random.multivariate_normal(mu1, sigma1 * np.eye(2), n1)
@@ -130,13 +141,13 @@ if __name__ == '__main__':
                         default=[100, 100], nargs='+', type=len_eq_2,
                         help="Parameters (n0, n1) to set prior distributions")
     parser.add_argument("--node_center_0",
-                        default=[-1, 0], nargs="+", type=len_eq_2,
+                        default=[-10, 0], nargs="+", type=len_eq_2,
                         help="Node centers mu0")
     parser.add_argument("--node_center_1",
-                        default=[1, 0], nargs="+", type=len_eq_2,
+                        default=[10, 0], nargs="+", type=len_eq_2,
                         help="Node centers mu1")
     parser.add_argument("--sigmas",
-                        default=[1, 5], nargs="+", type=len_eq_2,
+                        default=[1, 1], nargs="+", type=len_eq_2,
                         help="Sigma0 and sigma1")
     parser.add_argument("--p0", default=0.1, type=float, help="Probability of connection between nodes in the same group")
     parser.add_argument("--p1", default=0.1, type=float, help="Probability of connection between nodes in different groups")
