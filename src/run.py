@@ -5,7 +5,7 @@ import os.path as osp
 import pandas as pd
 
 
-project_name = 'bt_GCN'
+project_name = 'bt_SGC'
 # project_name = 'bt' 
 path = osp.join(osp.dirname(__file__), '..', 'data', 'test_dataset.txt')
 dataset_list = read_file_to_list(path)
