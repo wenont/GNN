@@ -204,7 +204,7 @@ def hyperparameter_tuning(config=None):
         )
         train_procedure(config.dataset_name, 'GCN', trainParams, is_wandb=True)
 
-def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidden_dim=64, batch_size=64, lr=0.01, default_patience=20, split=False):
+def get_generalization_error_from_a_dataset(dataset_name: str, model_name: str, trainParams: TrainParams):
     # Load dataset
     # dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     # dataset = dataset.shuffle()
@@ -218,8 +218,10 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
     model = get_model(
         model_name=model_name,
         in_channels=dataset.num_features,
-        hidden_channels=hidden_dim,
+        hidden_channels=trainParams.hidden_size,
         out_channels=dataset.num_classes,
+        num_hidden_layers=trainParams.num_hidden_layers,
+        norm=trainParams.normlization
     ).to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -257,17 +259,16 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
             data = data.to(device)
             pred = model(data.x, data.edge_index, data.batch).argmax(dim=1)
             correct += int((pred == data.y).sum())
-        # print(f'Correct: {correct}, len(loader.dataset): {len(loader.dataset)}')
         return correct / len(loader.dataset)
 
     best_test_accuracy_list = []
     best_train_accuracy_list = []
     for i in range(10):
         model.reset_parameters()
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(model.parameters(), lr=trainParams.learning_rate)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.7, patience=5, min_lr=0.0001)
-        print(f'Run {i+1}')
+            optimizer, mode='min', factor=0.7, patience=trainParams.patience_plateau)
+        print(f'On Fold {i+1}')
 
         test_mask = torch.zeros(len(dataset), dtype=torch.bool)
 
@@ -285,11 +286,11 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
         test_dataset = dataset[test_mask]
 
         train_loader = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True)
+            train_dataset, batch_size=trainParams.batch_size, shuffle=True)
         val_loader = DataLoader(
-            val_dataset, batch_size=batch_size, shuffle=False)
+            val_dataset, batch_size=trainParams.batch_size, shuffle=False)
         test_loader = DataLoader(
-            test_dataset, batch_size=batch_size, shuffle=False)
+            test_dataset, batch_size=trainParams.batch_size, shuffle=False)
 
         val_loss = val(val_loader)
         val_acc = test(val_loader)
@@ -305,7 +306,7 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
         best_val_loss, best_test_acc, best_train_acc = float('inf'), 0, 0
 
         start = time.time()
-        patience = default_patience
+        patience = trainParams.patience_earlystopping
         for epoch in range(1000):
             train_loss = train(train_loader)
             val_loss = val(val_loader)
@@ -313,19 +314,12 @@ def get_generalization_error_from_a_dataset(dataset_name, model_name='GCN', hidd
             val_acc = test(val_loader)
             scheduler.step(val_loss)
 
-            wandb.log({
-                f"{i+1}-Fold train_loss": train_loss,
-                f"{i+1}-Fold val_loss": val_loss,
-                f"{i+1}-Fold train_acc": train_acc,
-                f"{i+1}-Fold val_acc": val_acc
-            })
-
             if val_loss < best_val_loss:
                 test_acc = test(test_loader)
                 best_val_loss = val_loss
                 best_test_acc = test_acc
                 best_train_acc = train_acc
-                patience = default_patience
+                patience = patience
             else:
                 patience -= 1
                 if patience == 0:
