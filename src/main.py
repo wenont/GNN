@@ -37,56 +37,8 @@ else:
     DATAPATH = 'data/test_dataset.txt'
 
 
-
 def calculate_generalation_error():
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(filename='./log/parameters.log', encoding='utf-8',
-                        level=logging.INFO, format='%(message)s', filemode='a')
-    datasets = read_file_to_list(DATAPATH)
-
-    df = pd.DataFrame({
-        'Name': [],
-        'Ave. generalization error': [],
-        'std': []
-    })
-
-
-    for dataset in datasets:
-
-        wandb.init(
-            # set the wandb project where this run will be logged
-            project="bt",
-            # track hyperparameters and run metadata
-            config={
-                "dataset": dataset,
-                "model_name": "GCN",
-                "hidden_dim": 64,
-                "num_epochs": 200,
-                "batch_size": 64,
-                "learning_rate": 0.01,
-                "patience": 20
-            }
-        )
-
-        generalization_error, std = get_generalization_error_from_a_dataset(
-            dataset_name=wandb.config.dataset,
-            model_name=wandb.config.model_name,
-            hidden_dim=wandb.config.hidden_dim,
-            batch_size=wandb.config.batch_size,
-            lr=wandb.config.learning_rate,
-            default_patience=wandb.config.patience
-        )
-
-        wandb.run.summary["generalization_error"] = generalization_error
-        wandb.run.summary["std"] = std
-        wandb.finish()
-        df.loc[len(df)] = [dataset, generalization_error, std]
-
-    output_dir = 'results'
-    os.makedirs(output_dir, exist_ok=True)
-
-    logger.info(tabulate(df, headers='keys', tablefmt='psql'))
-    df.to_csv(os.path.join(output_dir, f'generalization_error_test.csv'))
+    pass
 
 
 def calcualte_parameters():
@@ -194,14 +146,15 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
     api = wandb.Api()
 
     # Get the set of sweep id
-    dataset_csv_path = osp.join(osp.dirname(__file__), '..', 'data', 'dataset.csv')
+    dataset_csv_path = osp.join(osp.dirname(
+        __file__), '..', 'data', 'dataset.csv')
     df = pd.read_csv(dataset_csv_path)
     sweep_ids = df[df['project'] == project_name]['sweep_id'].values
 
 # {'batch_size': 64, 'hidden_size': 256, 'dataset_name': 'MCF-7', 'normlization': 'graph', 'learning_rate': 0.006434620974325459, 'default_patience': 100, 'patience_plateau': 30, 'num_hidden_layers': 6}
     df_hyperparameters = pd.DataFrame({
         'sweep_id': [],
-        'model_name': [], # use project name
+        'model_name': [],  # use project name
         'batch_size': [],
         'hidden_size': [],
         'dataset_name': [],
@@ -218,7 +171,8 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
         runs = sorted(sweep.runs,
                       key=lambda run: run.summary.get("best_test_acc", 0), reverse=True)
         best_test_acc = runs[0].summary.get("best_test_acc", 0)
-        print(f"Best run {runs[0].name} with {best_test_acc}% validation accuracy")
+        print(f"Best run {runs[0].name} with {
+              best_test_acc}% validation accuracy")
 
         # get the best hyperparameters
         best_hyperparameters = runs[0].config
@@ -239,7 +193,7 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
     # save the best hyperparameters to csv, and print the table, do not replace the existing file
     df_hyperparameters.to_csv('results/best_hyperparameters.csv', mode='a')
     print(tabulate(df_hyperparameters, headers='keys', tablefmt='psql'))
-        
+
 
 def handle_option(option):
     if option == '1' or option == 'get_generalization_error':
