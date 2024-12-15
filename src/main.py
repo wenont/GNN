@@ -1,3 +1,4 @@
+import numpy
 from train import get_generalization_error_from_a_dataset
 import pandas as pd
 import logging
@@ -20,9 +21,8 @@ import argparse
 
 # from rich import print, Panel
 import wandb
-import os
 import os.path as osp
-
+from utils import TrainParams
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="increase output verbosity",
@@ -38,7 +38,41 @@ else:
 
 
 def calculate_generalation_error():
-    pass
+    path = osp.join(osp.dirname(__file__), 'results', 'best_hyperparameters.csv')
+    best_hyperparameters = pd.read_csv(path)
+    
+    for i in range(len(best_hyperparameters)):
+        
+        dataset_name = best_hyperparameters.loc[i, 'dataset_name']
+        model_name = best_hyperparameters.loc[i, 'model_name']
+        batch_size = best_hyperparameters.loc[i, 'batch_size'].item()
+        hidden_size = best_hyperparameters.loc[i, 'hidden_size'].item()
+        normlization = best_hyperparameters.loc[i, 'normlization']
+        learning_rate = best_hyperparameters.loc[i, 'learning_rate'].item()
+        default_patience = best_hyperparameters.loc[i, 'default_patience'].item()
+        patience_plateau = best_hyperparameters.loc[i, 'patience_plateau'].item()
+        num_hidden_layers = best_hyperparameters.loc[i, 'num_hidden_layers'].item()
+
+        # print(type(batch_size))
+        # break
+        # print(f"dataset_name: {dataset_name}, model_name: {model_name}, batch_size: {batch_size}, hidden_size: {hidden_size}, normlization: {normlization}, learning_rate: {learning_rate}, default_patience: {default_patience}, patience_plateau: {patience_plateau}, num_hidden_layers: {num_hidden_layers}")
+
+        if model_name == 'bt_GCN':
+            model_name = 'GCN'
+
+        trainParams = TrainParams(hidden_size=hidden_size, num_hidden_layers=num_hidden_layers, batch_size=batch_size,
+                                    learning_rate=learning_rate, patience_earlystopping=default_patience, patience_plateau=patience_plateau, normlization=normlization)
+
+        generalization_error, standard_deviation = get_generalization_error_from_a_dataset(dataset_name=dataset_name, model_name=model_name, trainParams=trainParams)
+        print(f"Generalization error for {dataset_name} is {generalization_error}")
+
+        # Save the generalization error to a csv file
+        df = pd.DataFrame({
+            'Name': [dataset_name],
+            'Ave. generalization error': [generalization_error],
+            'Standard deviation': [standard_deviation]
+        })
+        df.to_csv('results/generalization_error.csv', mode='a')
 
 
 def calcualte_parameters():
