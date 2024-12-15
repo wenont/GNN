@@ -18,9 +18,11 @@ import logging
 import matplotlib.pyplot as plt
 import argparse
 
-from rich import print, Panel
+# from rich import print, Panel
 import wandb
 import os
+import os.path as osp
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbose", help="increase output verbosity",
@@ -187,6 +189,58 @@ def interactive_mode():
     handle_option(option)
 
 
+def get_best_hyperparameters(project_name: str = 'bt_GCN'):
+    # Get hyperparameters from wandb
+    api = wandb.Api()
+
+    # Get the set of sweep id
+    dataset_csv_path = osp.join(osp.dirname(__file__), '..', 'data', 'dataset.csv')
+    df = pd.read_csv(dataset_csv_path)
+    sweep_ids = df[df['project'] == project_name]['sweep_id'].values
+
+# {'batch_size': 64, 'hidden_size': 256, 'dataset_name': 'MCF-7', 'normlization': 'graph', 'learning_rate': 0.006434620974325459, 'default_patience': 100, 'patience_plateau': 30, 'num_hidden_layers': 6}
+    df_hyperparameters = pd.DataFrame({
+        'sweep_id': [],
+        'model_name': [], # use project name
+        'batch_size': [],
+        'hidden_size': [],
+        'dataset_name': [],
+        'normlization': [],
+        'learning_rate': [],
+        'default_patience': [],
+        'patience_plateau': [],
+        'num_hidden_layers': []
+    })
+
+    for sweep_id in sweep_ids:
+        sweep = api.sweep(
+            f'wensz-rwth-aachen-university/{project_name}/{sweep_id}')
+        runs = sorted(sweep.runs,
+                      key=lambda run: run.summary.get("best_test_acc", 0), reverse=True)
+        best_test_acc = runs[0].summary.get("best_test_acc", 0)
+        print(f"Best run {runs[0].name} with {best_test_acc}% validation accuracy")
+
+        # get the best hyperparameters
+        best_hyperparameters = runs[0].config
+        # save the best hyperparameters to dataframe
+        df_hyperparameters.loc[len(df_hyperparameters)] = [
+            sweep_id,
+            project_name,
+            best_hyperparameters['batch_size'],
+            best_hyperparameters['hidden_size'],
+            best_hyperparameters['dataset_name'],
+            best_hyperparameters['normlization'],
+            best_hyperparameters['learning_rate'],
+            best_hyperparameters['default_patience'],
+            best_hyperparameters['patience_plateau'],
+            best_hyperparameters['num_hidden_layers']
+        ]
+
+    # save the best hyperparameters to csv, and print the table, do not replace the existing file
+    df_hyperparameters.to_csv('results/best_hyperparameters.csv', mode='a')
+    print(tabulate(df_hyperparameters, headers='keys', tablefmt='psql'))
+        
+
 def handle_option(option):
     if option == '1' or option == 'get_generalization_error':
         calculate_generalation_error()
@@ -196,8 +250,8 @@ def handle_option(option):
         compare_generalization_error_and_parameters()
     elif option == '4' or option == 'get_correlation':
         get_correlation()
-    elif option == '5' or option == 'foo':
-        foo()
+    elif option == '5' or option == 'get_hyperparameters':
+        get_best_hyperparameters()
     else:
         if option.isdigit() and int(option) == 6:
             print('Exiting...')
