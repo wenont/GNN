@@ -3,10 +3,16 @@ from utils import read_file_to_list, setup_wandb_sweep
 from train import hyperparameter_tuning
 import os.path as osp
 import pandas as pd
+import argparse
 
 
-project_name = 'bt_SGC'
-# project_name = 'bt' 
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--project_name", help="project name", default='bt_GCN')
+parser.add_argument("-i", "--sweep_id", help="sweep id")
+args = parser.parse_args()
+
+
+project_name = args.project_name
 path = osp.join(osp.dirname(__file__), '..', 'data', 'test_dataset.txt')
 dataset_list = read_file_to_list(path)
 
