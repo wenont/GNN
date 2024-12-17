@@ -16,7 +16,7 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
     :param num_folds: Number of folds for cross-validation
     """
 
-    dataset = load_dataset(dataset_name)
+    dataset = load_dataset(dataset_name, use_shuffle_seed=True)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Device: {device}')
@@ -136,7 +136,7 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
                 patience -= 1
                 if patience == 0:
                     break
-            if epoch % 10 == 0:
+            if epoch % 20 == 0:
                 train_losses.append(train_loss)
                 val_losses.append(val_loss)
                 val_accs.append(val_acc)
