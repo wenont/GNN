@@ -74,11 +74,11 @@ class GAT(nn.Module):
 
 
 class GATv2(nn.Module):
-    def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int, norm: str = 'batch'):
+    def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int, norm: str = 'batch', heads: int = 1, concat: bool = True, dropout: float = 0, residual: bool = False):
         super().__init__()
-        self.conv1 = GATv2Conv(in_channels, hidden_channels)
+        self.conv1 = GATv2Conv(in_channels, hidden_channels, heads, concat, dropout, residual)
         self.convs = nn.ModuleList(
-            [GATv2Conv(hidden_channels, hidden_channels) for _ in range(num_hidden_layers)])
+            [GATv2Conv(hidden_channels, hidden_channels, heads, concat, dropout, residual) for _ in range(num_hidden_layers)])
         self.norms = nn.ModuleList(
             [normalization_resolver(norm, hidden_channels) for _ in range(num_hidden_layers + 1)])
         self.fc1 = nn.Linear(hidden_channels, hidden_channels)
