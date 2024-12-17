@@ -1,4 +1,4 @@
-import numpy
+import os
 from train import get_generalization_error_from_a_dataset
 import pandas as pd
 import logging
@@ -13,7 +13,8 @@ from utils import (
     get_average_betweenness_centrality,
     get_average_eigenvector_centrality,
     wl_1d_color_count,
-    read_file_to_list
+    read_file_to_list,
+    number_of_graphs
 )
 import logging
 import matplotlib.pyplot as plt
@@ -148,19 +149,79 @@ def compare_generalization_error_and_parameters():
 
 
 def get_correlation():
+    '''
+    Get the correlation between the generalization error and the parameters
+    1. Ave. degree
+    2. Ave. shortest path
+    3. Graph diameter
+    4. Graph density
+    5. Graph clustering coefficient
+    6. Ave. closeness centrality
+    7. Ave. betweenness centrality
+    8. Ave. eigenvector centrality
+    9. 1-WL color count
+
+    print the correlation matrix
+
+    Use scatter plot to show the correlation between the generalization error and the parameters
+    '''
+
     df1 = pd.read_csv('results/generalization_error.csv')
     df2 = pd.read_csv('results/parameters.csv')
 
-    # correlation of ave. degree and ave. generalization error
-    correlation1 = df1['Ave. generalization error'].corr(df2['Ave. degree'])
-    print(f'Correlation of ave. degree and ave. generalization error: \
-          {correlation1}')
+    df_combined = pd.merge(df1, df2, on='Name').drop(columns=['Unnamed: 0'])
 
-    # correlation of ave. shortest path and ave. generalization error
-    correlation2 = df1['Ave. generalization error'].corr(
-        df2['Ave. shortest path'])
-    print(f'Correlation of ave. shortest path and ave. generalization error: {
-          correlation2}')
+    # Use scatter plot to show the correlation between the generalization error and the parameters
+    # Use the function number_of_graphs to get the number of graphs
+    # if the number of graphs is less than 1000, show the point in the scatter plot with color blue
+    # if the number of graphs is more than 1000 but less than 4000, show the point in the scatter plot with color green
+    # if the number of graphs is more than 4000, show the point in the scatter plot with color red
+    num_columns = len(df_combined.drop(columns= ['Name', 'Standard deviation']).columns)
+    num_rows = (num_columns + 2) // 3
+    plt.figure(figsize=(20, 20))
+    for i, column in enumerate(df_combined.drop(columns= ['Name', 'Standard deviation']).columns):
+        plt.subplot(num_rows, 3, i+1)
+        colors = []
+        for name in df_combined['Name']:
+            num_graphs = number_of_graphs(name)
+            if num_graphs < 1000:
+                colors.append('blue')
+            elif num_graphs < 4000:
+                colors.append('green')
+            else:
+                colors.append('red')
+        plt.scatter(df_combined[column], df_combined['Ave. generalization error'], c=colors)
+        correlation = df_combined[column].corr(df_combined['Ave. generalization error'])
+        plt.title(f'{column} vs. Ave. Generalization Error\nCorrelation: {correlation:.2f}')
+        plt.xlabel(column)
+        plt.ylabel('Ave. Generalization Error')
+    plt.tight_layout()
+    plt.show()
+    
+    # save the scatter plot to a file
+    plt.savefig('results/correlation.png')
+
+    # ignore the dataset with less than 1000 graphs
+    # Use the function number_of_graphs to get the number of graphs
+    df_combined_ignore_less_than_1000 = df_combined.copy()
+    for i, name in enumerate(df_combined_ignore_less_than_1000['Name']):
+        num_graphs = number_of_graphs(name)
+        if num_graphs < 1000:
+            df_combined_ignore_less_than_1000.drop(i, inplace=True)
+    num_columns = len(df_combined_ignore_less_than_1000.drop(columns= ['Name', 'Standard deviation']).columns)
+    num_rows = (num_columns + 2) // 3
+    plt.figure(figsize=(20, 20))
+    for i, column in enumerate(df_combined_ignore_less_than_1000.drop(columns= ['Name', 'Standard deviation']).columns):
+        plt.subplot(num_rows, 3, i+1)
+        plt.scatter(df_combined_ignore_less_than_1000[column], df_combined_ignore_less_than_1000['Ave. generalization error'])
+        correlation = df_combined_ignore_less_than_1000[column].corr(df_combined_ignore_less_than_1000['Ave. generalization error'])
+        plt.title(f'{column} vs. Ave. Generalization Error\nCorrelation: {correlation:.2f}')
+        plt.xlabel(column)
+        plt.ylabel('Ave. Generalization Error')
+    plt.tight_layout()
+
+    # save the scatter plot to a file
+    plt.savefig('results/correlation_ignore_less_than_1000.png')
 
 
 def interactive_mode():
@@ -169,8 +230,9 @@ def interactive_mode():
     print('2. Get Parameters')
     print('3. Compare generalization error and parameters')
     print('4. Get correlation')
-    print('5. foo')
-    print('6. Exit')
+    print('5. Get best hyperparameters')
+    print('6. Sum the parameters')
+    print('7. Exit')
     option = input('Enter your choice: ')
     handle_option(option)
 
@@ -185,7 +247,6 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
     df = pd.read_csv(dataset_csv_path)
     sweep_ids = df[df['project'] == project_name]['sweep_id'].values
 
-# {'batch_size': 64, 'hidden_size': 256, 'dataset_name': 'MCF-7', 'normlization': 'graph', 'learning_rate': 0.006434620974325459, 'default_patience': 100, 'patience_plateau': 30, 'num_hidden_layers': 6}
     df_hyperparameters = pd.DataFrame({
         'sweep_id': [],
         'model_name': [],  # use project name
@@ -229,6 +290,61 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
     print(tabulate(df_hyperparameters, headers='keys', tablefmt='psql'))
 
 
+def sum_the_parameters():
+    # read the files in the path ../results/, the file names are like parameters_*.csv
+    # sum the parameters of each dataset
+    # save the results to a csv file
+    path = osp.join(osp.dirname(__file__), '..', 'results')
+    files = os.listdir(path)
+    df = pd.DataFrame({
+        'Name': [],
+        'Ave. degree': [],
+        'Ave. shortest path': [],
+        'Graph diameter': [],
+        'Graph density': [],
+        'Graph clustering coefficient': [],
+        'Ave. closeness centrality': [],
+        'Ave. betweenness centrality': [],
+        'Ave. eigenvector centrality': [],
+        '1-WL color count': []
+    })
+
+    for file in files:
+        if file.startswith('parameters_'):
+            df_temp = pd.read_csv(osp.join(path, file))
+            df = pd.concat([df, df_temp], ignore_index=True)
+        
+    df_sum = pd.DataFrame({
+        'Name': [],
+        'Ave. degree': [],
+        'Ave. shortest path': [],
+        'Graph diameter': [],
+        'Graph density': [],
+        'Graph clustering coefficient': [],
+        'Ave. closeness centrality': [],
+        'Ave. betweenness centrality': [],
+        'Ave. eigenvector centrality': [],
+        '1-WL color count': []
+    })
+
+    df_sum.loc[0] = [
+        'Sum',
+        df['Ave. degree'].sum(),
+        df['Ave. shortest path'].sum(),
+        df['Graph diameter'].sum(),
+        df['Graph density'].sum(),
+        df['Graph clustering coefficient'].sum(),
+        df['Ave. closeness centrality'].sum(),
+        df['Ave. betweenness centrality'].sum(),
+        df['Ave. eigenvector centrality'].sum(),
+        df['1-WL color count'].sum()
+    ]
+
+    df = pd.concat([df, df_sum], ignore_index=True)
+    df = df.drop(columns=['Unnamed: 0'])
+    df.to_csv('results/sum_parameters.csv', index=False)
+
+
 def handle_option(option):
     if option == '1' or option == 'get_generalization_error':
         calculate_generalation_error()
@@ -240,6 +356,8 @@ def handle_option(option):
         get_correlation()
     elif option == '5' or option == 'get_hyperparameters':
         get_best_hyperparameters()
+    elif option == '6' or option == 'sum_the_parameters':
+        sum_the_parameters()
     else:
         if option.isdigit() and int(option) == 6:
             print('Exiting...')
