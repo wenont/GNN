@@ -364,7 +364,7 @@ def wl_1d_color_count(dataset_name, verbose=False):
     return sum(color_count_sum) / len(color_count_sum)
 
 
-def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
+def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD', temp=False):
     sweep_config = {
         'method': 'bayes',
         'name': dataset_name,
@@ -409,6 +409,16 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD'):
         },
         'run_cap': 50
     }
+ 
+    if temp is True:
+        sweep_config['name'] = dataset_name + '_temp'
+
+    if project_name == 'bt_GATv2':
+        sweep_config['heads'] = { 'values': [1, 2, 4] }
+        sweep_config['concat'] = { 'values': [True, False] }
+        sweep_config['dropout'] = { 'values': [0, 0.1, 0.2] }
+        sweep_config['residual'] = { 'values': [True, False] }
+        sweep_config['run_cap'] = 100
 
     sweep_id = wandb.sweep(sweep_config, project=project_name)
     return sweep_id
@@ -474,15 +484,18 @@ class IMDBPreTransform(object):
         return data
 
 
-def load_dataset(dataset_name: str):
+def load_dataset(dataset_name: str, use_shuffle_seed=False):
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'TUDataset')
     if dataset_name == 'IMDB-BINARY':
         return TUDataset(path, name='IMDB-BINARY',
                          pre_transform=IMDBPreTransform())
     else:
         dataset = TUDataset(path, name=dataset_name, use_node_attr=True)
+        if use_shuffle_seed:
+            perm = torch.load(osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'seeds', f'{dataset_name}.pt'))
+            dataset = dataset.index_select(perm)
         if len(dataset) > 4000:
-            dataset = dataset.shuffle()[:4000] # get random 4000 graphs
+            dataset = dataset[:4000] # get random 4000 graphs
         print(f'Name: {dataset_name} | Number of graphs: {len(dataset)}')
         return dataset
 
@@ -537,6 +550,11 @@ def get_best_run(project_name: str, dataset_name: str):
     print(f'Best run name: {best_run.name} with id: {best_run.id}')
     return best_run_config
 
+def number_of_graphs(dataset_name):
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'TUDataset.csv')
+    df = pd.read_csv(path)
+
+    return df[df['name'] == dataset_name]['Graphs'].values[0]
 
 if __name__ == '__main__':
     # test get_best_run
