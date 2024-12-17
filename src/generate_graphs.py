@@ -1,9 +1,11 @@
 import argparse
+import os
 import torch
 from torch_geometric.data import Data, DataLoader
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+import os.path as osp
 
 
 def generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p0, p1):
@@ -55,7 +57,7 @@ def generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p0, p1):
     # Generate the dataset
 
     dataset = []
-    for i in range(1): # <------ the number of graphs in the dataset
+    for i in range(300): # <------ the number of graphs in the dataset
         # Generate the node features
         x0 = np.random.multivariate_normal(mu0, sigma0 * np.eye(2), n0)
         x1 = np.random.multivariate_normal(mu1, sigma1 * np.eye(2), n1)
@@ -68,7 +70,7 @@ def generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p0, p1):
         # Generate the edge index
         edge_index = []
         for i in range(n0 + n1):
-            for j in range(i + 1, n0 + n1):
+            for j in range(i, n0 + n1):
                 if x[i, 2] == x[j, 2]:
                     if np.random.rand() < p0:
                         edge_index.append([i, j])
@@ -141,10 +143,10 @@ if __name__ == '__main__':
                         default=[100, 100], nargs='+', type=len_eq_2,
                         help="Parameters (n0, n1) to set prior distributions")
     parser.add_argument("--node_center_0",
-                        default=[-10, 0], nargs="+", type=len_eq_2,
+                        default=[-1, 0], nargs="+", type=len_eq_2,
                         help="Node centers mu0")
     parser.add_argument("--node_center_1",
-                        default=[10, 0], nargs="+", type=len_eq_2,
+                        default=[1, 0], nargs="+", type=len_eq_2,
                         help="Node centers mu1")
     parser.add_argument("--sigmas",
                         default=[1, 1], nargs="+", type=len_eq_2,
@@ -158,6 +160,19 @@ if __name__ == '__main__':
     sigma0, sigma1 = args.sigmas
     p0, p1 = args.p0, args.p1
 
-    dataset = generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p0, p1)
-    print(len(dataset))
-    visualize_graph(dataset[0])
+    for p in [0.85]:
+        print(f"Generating dataset with p={p}")
+        dataset_minus = generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p, p-0.1)
+        print('Dataset minus generated')
+        dataset = generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p, p)
+        print('Dataset generated')
+        dataset_plus = generate_dataset(n0, n1, mu0, mu1, sigma0, sigma1, p, p+0.1)
+        print('Dataset plus generated')
+
+        # sum the datasets
+        dataset = dataset_minus + dataset + dataset_plus
+
+        # Save the dataset
+        print('Saving the dataset...')
+        torch.save(dataset, osp.join(osp.dirname(__file__), '..', 'data', 'generated_dataset', f'p1={p}.pt'))
+        print('Dataset saved!')
