@@ -47,3 +47,14 @@ UACC257
 UACC257H
 Yeast
 YeastH
+COIL-DEL
+COIL-RAG
+Cuneiform
+Fingerprint
+FIRSTMM_DB
+Letter-high
+Letter-low
+Letter-med
+MSRC_9
+MSRC_21
+MSRC_21C
