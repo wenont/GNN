@@ -9,7 +9,9 @@ parser.add_argument("-t", "--temporory", help="set a temporary flag",
                     action="store_true")
 args = parser.parse_args()
 
-project_name = 'bt_GCN'
+print(f'Temporary flag: {args.temporory}')
+
+project_name = 'bt_GATv2'
 path = osp.join(osp.dirname(__file__), '..', 'data', 'test_dataset.txt')
 dataset_list = read_file_to_list(path)
 
@@ -28,7 +30,7 @@ for dataset_name in dataset_list:
 			sweep_id = setup_wandb_sweep(project_name, dataset_name)
 		print(f'Sweep id: {sweep_id}')
 		# save the dataset name, sweep_id and project name to the csv
-		df = pd.concat([df, pd.DataFrame([{'name': f'{dataset_name}_temp', 'project': project_name, 'sweep_id': sweep_id}])], ignore_index=True)
+		df = pd.concat([df, pd.DataFrame([{'name': f'{dataset_name}', 'project': project_name, 'sweep_id': sweep_id}])], ignore_index=True)
 		df.to_csv(path, index=False)
 	else:
 		print('Dataset found')

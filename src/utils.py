@@ -12,6 +12,7 @@ from rich.progress import track
 import wandb
 import os.path as osp
 import pandas as pd
+from typing import Optional
 
 
 class MyFilter(object):
@@ -57,6 +58,9 @@ class TrainParams:
     patience_plateau: int
     normlization: str
     learning_rate: float
+    heads: Optional[int] = None
+    dropout: Optional[float] = None
+    residual: Optional[bool] = None
 
 
 def plot_training_results(dataset_name: str, train_accs, val_accs, train_losses, 
@@ -413,12 +417,17 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD', temp=F
     if temp is True:
         sweep_config['name'] = dataset_name + '_temp'
 
+    if project_name == 'bt_SGC':
+        sweep_config['parameters']['model_name'] = { 'value': 'SGC' }
+
     if project_name == 'bt_GATv2':
-        sweep_config['heads'] = { 'values': [1, 2, 4] }
-        sweep_config['concat'] = { 'values': [True, False] }
-        sweep_config['dropout'] = { 'values': [0, 0.1, 0.2] }
-        sweep_config['residual'] = { 'values': [True, False] }
-        sweep_config['run_cap'] = 100
+        sweep_config['parameters']['model_name'] = { 'value': 'GATv2' }
+        sweep_config['parameters']['heads'] = { 'values': [1, 2, 4] }
+        sweep_config['parameters']['dropout'] = { 'values': [0, 0.1, 0.2] }
+        sweep_config['parameters']['residual'] = { 'values': [True, False] }
+    
+    if project_name == 'bt_MPNN':
+        sweep_config['parameters']['model_name'] = { 'value': 'MPNN' }
 
     sweep_id = wandb.sweep(sweep_config, project=project_name)
     return sweep_id
