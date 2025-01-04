@@ -6,7 +6,7 @@ import time
 import wandb
 
 
-def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParams, is_wandb=False, num_folds: int = 5):
+def train_procedure(dataset_name: str,  model_name: str, trainParams, is_wandb=False, num_folds: int = 5):
     """
     Train a model on a dataset with the given hyperparameters
     :param dataset_name: Name of the dataset
@@ -22,14 +22,27 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
     print(f'Device: {device}')
 
     # Define model
-    model = get_model(
-        model_name=model_name,      
-        in_channels=dataset.num_features,
-        hidden_channels=trainParams.hidden_size,
-        out_channels=dataset.num_classes,
-        num_hidden_layers=trainParams.num_hidden_layers,
-        norm=trainParams.normlization
-    ).to(device)
+    if model_name == 'GATv2':
+        model = get_model(
+            model_name=model_name,
+            in_channels=dataset.num_features,
+            hidden_channels=trainParams.hidden_size,
+            out_channels=dataset.num_classes,
+            num_hidden_layers=trainParams.num_hidden_layers,
+            norm=trainParams.normlization,
+            heads=trainParams.heads,
+            dropout=trainParams.dropout,
+            residual=trainParams.residual
+        ).to(device)
+    else:
+        model = get_model(
+            model_name=model_name,      
+            in_channels=dataset.num_features,
+            hidden_channels=trainParams.hidden_size,
+            out_channels=dataset.num_classes,
+            num_hidden_layers=trainParams.num_hidden_layers,
+            norm=trainParams.normlization
+        ).to(device)
 
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -136,7 +149,7 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
                 patience -= 1
                 if patience == 0:
                     break
-            if epoch % 20 == 0:
+            if epoch % 50 == 0:
                 train_losses.append(train_loss)
                 val_losses.append(val_loss)
                 val_accs.append(val_acc)
@@ -183,17 +196,19 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams: TrainParam
 
     return best_test_acc
 
-def train_test(dataset_name: str, model_name: str = 'GCN'):
-    hidden_size = 128
+def train_test(dataset_name: str, model_name: str = 'GATv2'):
+    hidden_size = 64
     num_hidden_layers = 2
-    batch_size = 64
-    patience = 20
-    patience_plateau = 5
+    batch_size = 128
+    default_patience = 100
+    patience_plateau = 30
     normlization = 'batch'
-    learning_rate = 0.001
+    learning_rate = 0.0013193857964774562
 
-    trainParams = TrainParams(hidden_size, num_hidden_layers, batch_size, patience, patience_plateau, normlization, learning_rate)
-    train_procedure(dataset_name, model_name, trainParams, is_wandb=False, num_folds=1)
+    trainParams = TrainParams(hidden_size, num_hidden_layers, batch_size, default_patience, patience_plateau, normlization, learning_rate, 4, 0, True)
+
+    
+    train_procedure(dataset_name, model_name, trainParams, is_wandb=False, num_folds=10)
 
 
 def hyperparameter_tuning(config=None):
@@ -201,8 +216,29 @@ def hyperparameter_tuning(config=None):
         config = wandb.config
         trainParams = TrainParams(
             config.hidden_size, config.num_hidden_layers, config.batch_size, config.default_patience, config.patience_plateau, config.normlization, config.learning_rate
-        )
-        train_procedure(config.dataset_name, 'GCN', trainParams, is_wandb=True)
+            )
+        if config.model_name == 'GATv2':
+            trainParams.heads = config.heads
+            trainParams.dropout = config.dropout
+            trainParams.residual = config.residual
+
+        # trainParams = {
+        #     'hidden_size': config.hidden_size,
+        #     'num_hidden_layers': config.num_hidden_layers,
+        #     'batch_size': config.batch_size,
+        #     'default_patience': config.default_patience,
+        #     'patience_plateau': config.patience_plateau,
+        #     'normlization': config.normlization,
+        #     'learning_rate': config.learning_rate,
+        # }
+        # if config.model_name == 'GATv2':
+        #     trainParams['heads'] = config.heads
+        #     trainParams['concat'] = config.concat
+        #     trainParams['dropout'] = config.dropout
+        #     trainParams['residual'] = config.residual
+
+
+        train_procedure(config.dataset_name, config.model_name, trainParams, is_wandb=True)
 
 def get_generalization_error_from_a_dataset(dataset_name: str, model_name: str, trainParams: TrainParams):
     # Load dataset
@@ -353,4 +389,4 @@ def get_generalization_error_from_a_dataset(dataset_name: str, model_name: str, 
 
 
 if __name__ == '__main__':
-    train_test('AIDS', 'MPNN')
+    train_test('PROTEINS_full', 'GATv2')

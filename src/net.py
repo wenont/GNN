@@ -74,11 +74,11 @@ class GAT(nn.Module):
 
 
 class GATv2(nn.Module):
-    def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int, norm: str = 'batch', heads: int = 1, concat: bool = True, dropout: float = 0, residual: bool = False):
+    def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int, norm: str = 'batch', heads: int = 1, dropout: float = 0, residual: bool = False):
         super().__init__()
-        self.conv1 = GATv2Conv(in_channels, hidden_channels, heads, concat, dropout, residual)
+        self.conv1 = GATv2Conv(in_channels, hidden_channels, heads=heads, concat=False, dropout=dropout, residual=residual)
         self.convs = nn.ModuleList(
-            [GATv2Conv(hidden_channels, hidden_channels, heads, concat, dropout, residual) for _ in range(num_hidden_layers)])
+            [GATv2Conv(hidden_channels, hidden_channels, heads=heads, concat=False, dropout=dropout, residual=residual) for _ in range(num_hidden_layers)])
         self.norms = nn.ModuleList(
             [normalization_resolver(norm, hidden_channels) for _ in range(num_hidden_layers + 1)])
         self.fc1 = nn.Linear(hidden_channels, hidden_channels)
@@ -189,7 +189,7 @@ class MPNN(nn.Module):
         self.fc2.reset_parameters()
 
 
-def get_model(model_name: str, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int = 4, norm: str = 'batch'):
+def get_model(model_name: str, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int = 4, norm: str = 'batch', heads: int = 1, concat: bool = True, dropout: float = 0, residual: bool = False):
     if model_name == 'MPNN':
         return MPNN(in_channels, hidden_channels, out_channels, num_hidden_layers, norm)
     elif model_name == 'GCN':
@@ -197,7 +197,7 @@ def get_model(model_name: str, in_channels: int, hidden_channels: int, out_chann
     elif model_name == 'GAT':
         return GAT(in_channels, hidden_channels, out_channels, num_hidden_layers, norm)
     elif model_name == 'GATv2':
-        return GATv2(in_channels, hidden_channels, out_channels, num_hidden_layers, norm)
+        return GATv2(in_channels, hidden_channels, out_channels, num_hidden_layers, norm, heads, dropout, residual)
     elif model_name == 'SGC':
         return SGC(in_channels, hidden_channels, out_channels, num_hidden_layers, norm)
     else:
