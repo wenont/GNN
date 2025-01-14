@@ -39,7 +39,8 @@ else:
 
 
 def calculate_generalation_error():
-    path = osp.join(osp.dirname(__file__), 'results', 'best_hyperparameters.csv')
+    project_name = 'bt_SGC'
+    path = osp.join(osp.dirname(__file__), 'results', 'best_hyperparameters_{project_name}.csv')
     best_hyperparameters = pd.read_csv(path)
     
     for i in range(len(best_hyperparameters)):
@@ -60,6 +61,8 @@ def calculate_generalation_error():
 
         if model_name == 'bt_GCN':
             model_name = 'GCN'
+        if model_name == 'bt_SGC':
+            model_name = 'GCN'
 
         trainParams = TrainParams(hidden_size=hidden_size, num_hidden_layers=num_hidden_layers, batch_size=batch_size,
                                     learning_rate=learning_rate, patience_earlystopping=default_patience, patience_plateau=patience_plateau, normlization=normlization)
@@ -73,7 +76,7 @@ def calculate_generalation_error():
             'Ave. generalization error': [generalization_error],
             'Standard deviation': [standard_deviation]
         })
-        df.to_csv('results/generalization_error.csv', mode='a')
+        df.to_csv(f'results/generalization_error_{project_name}.csv', mode='a')
 
 
 def calcualte_parameters():
@@ -286,7 +289,7 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
         ]
 
     # save the best hyperparameters to csv, and print the table, do not replace the existing file
-    df_hyperparameters.to_csv('results/best_hyperparameters.csv', mode='a')
+    df_hyperparameters.to_csv(f'results/best_hyperparameters_{project_name}.csv', mode='a')
     print(tabulate(df_hyperparameters, headers='keys', tablefmt='psql'))
 
 
@@ -355,7 +358,8 @@ def handle_option(option):
     elif option == '4' or option == 'get_correlation':
         get_correlation()
     elif option == '5' or option == 'get_hyperparameters':
-        get_best_hyperparameters()
+        project_name = input('Enter the project name: ')
+        get_best_hyperparameters(project_name)
     elif option == '6' or option == 'sum_the_parameters':
         sum_the_parameters()
     else:
