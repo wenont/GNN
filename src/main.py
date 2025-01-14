@@ -40,7 +40,7 @@ else:
 
 def calculate_generalation_error():
     project_name = 'bt_SGC'
-    path = osp.join(osp.dirname(__file__), 'results', 'best_hyperparameters_{project_name}.csv')
+    path = osp.join(osp.dirname(__file__), 'results', f'best_hyperparameters_{project_name}.csv')
     best_hyperparameters = pd.read_csv(path)
     
     for i in range(len(best_hyperparameters)):
