@@ -58,9 +58,10 @@ class TrainParams:
     patience_plateau: int
     normlization: str
     learning_rate: float
-    heads: Optional[int] = None
-    dropout: Optional[float] = None
-    residual: Optional[bool] = None
+    heads: Optional[int] = None # for GATv2
+    dropout: Optional[float] = None # for GATv2
+    residual: Optional[bool] = None # for GATv2
+    mlp_hidden_dim: Optional[int] = None # for MPNN
 
 
 def plot_training_results(dataset_name: str, train_accs, val_accs, train_losses, 
@@ -428,6 +429,7 @@ def setup_wandb_sweep(project_name: str = 'bt', dataset_name: str = 'DD', temp=F
     
     if project_name == 'bt_MPNN':
         sweep_config['parameters']['model_name'] = { 'value': 'MPNN' }
+        sweep_config['parameters']['mlp_hidden_dim'] = { 'values': [16, 32, 64] }
 
     sweep_id = wandb.sweep(sweep_config, project=project_name)
     return sweep_id
