@@ -119,6 +119,43 @@ At first, we need to define some terms with regard to the graph. In graph theory
 \subsection{Machine learning}
 Machine learning is a subfield of artificial intelligence that focuses on the development of algorithms that can learn from and make predictions or decisions based on data. The goal of machine learning is to develop models that can generalize well to unseen data. The model is trained on a training dataset, which consists of input-output pairs. The model is then evaluated on a test dataset, which is separate from the training dataset. 
 
+\subsubsection{Gradient Descent}
+Gradient descent is an optimization algorithm used to minimize a function by iteratively moving in the direction of the steepest decrease of the function. The algorithm works by computing the gradient of the function at a given point and then updating the point in the direction of the negative gradient. The update rule is given by
+
+$$
+    \theta_{t+1} = \theta_t - \alpha \nabla f(\theta_t)
+$$
+where $\theta_t$ is the parameter vector at iteration $t$, $\alpha$ is the learning rate, and $\nabla f(\theta_t)$ is the gradient of the function $f$ at $\theta_t$. The learning rate $\alpha$ is a hyperparameter that controls the step size of the update.
+
+\subsubsection{Stochastic Gradient Descent}
+Stochastic gradient descent (SGD) is a variant of gradient descent that uses a random sample of the training data to compute the gradient at each iteration. The algorithm works by randomly selecting a mini-batch of data points from the training dataset, computing the gradient of the loss function with respect to the mini-batch, and then updating the parameters based on the gradient. The update rule is given by
+
+$$
+    \theta_{t+1} = \theta_t - \alpha \nabla f(\theta_t; x_{i:t}, y_{i:t})
+$$
+where $x_{i:t}$ and $y_{i:t}$ are the mini-batch of data points and labels, respectively. The learning rate $\alpha$ is a hyperparameter that controls the step size of the update.
+
+
+\subsubsection{Backpropagation}
+Backpropagation is an algorithm used to compute the gradients of the loss function with respect to the parameters of a neural network. The algorithm works by computing the gradient of the loss function with respect to the output of the network and then propagating the gradient backward through the network to compute the gradients of the loss function with respect to the parameters. The gradients are then used to update the parameters of the network using an optimization algorithm such as gradient descent.
+
+\subsubsection{Regularization}
+Regularization is a technique used to prevent overfitting in machine learning models. Overfitting occurs when a model learns the noise in the training data rather than the underlying pattern. Regularization works by adding a penalty term to the loss function that discourages the model from learning complex patterns that are specific to the training data. There are two common types of regularization: $L1$ regularization and $L2$ regularization. $L1$ regularization adds a penalty term that is proportional to the $L1$ norm of the parameters, while $L2$ regularization adds a penalty term that is proportional to the $L2$ norm of the parameters. The regularization parameter $\lambda$ controls the strength of the regularization.
+
+\subsubsection{Early Stopping}
+Early stopping is a technique used to prevent overfitting in machine learning models. The idea is to monitor the performance of the model on a validation dataset during training and stop training when the performance starts to degrade. This is done by saving the model parameters at each iteration and selecting the model with the best performance on the validation dataset. Early stopping is a form of regularization that prevents the model from learning the noise in the training data.
+
+\subsubsection{Cross-validation}
+Cross-validation is a technique used to evaluate the performance of a machine learning model. The idea is to split the dataset into multiple subsets, or folds, and train the model on one subset while evaluating it on the remaining subsets. This process is repeated multiple times, with each subset used as the test set once. The performance of the model is then averaged over all the folds to obtain an estimate of the model's generalization performance. Cross-validation is used to prevent overfitting and to obtain a more accurate estimate of the model's performance.
+
+\subsubsection{Hyperparameter tuning}
+Hyperparameter tuning is the process of selecting the optimal hyperparameters for a machine learning model. Hyperparameters are parameters that are set before the training process begins and control the behavior of the model. Examples of hyperparameters include the learning rate, batch size, number of hidden layers, and number of epochs. Hyperparameter tuning is typically done using a grid search or random search over a predefined set of hyperparameters. The goal is to find the set of hyperparameters that results in the best performance on a validation dataset.
+
+\subsubsection{Loss function}
+The loss function is a function that measures the difference between the predicted output of a model and the true output. The goal of training a machine learning model is to minimize the loss function, which is done by adjusting the parameters of the model using an optimization algorithm such as gradient descent. The choice of loss function depends on the task at hand. For classification tasks, the cross-entropy loss function is commonly used, while for regression tasks, the mean squared error loss function is often used.
+
+\subsubsection{Optimization algorithm}
+An optimization algorithm is an algorithm used to minimize a function by iteratively updating the parameters of the model. The goal is to find the set of parameters that minimizes the loss function. Gradient descent is a common optimization algorithm used in machine learning, but there are many variants of gradient descent that are designed to improve convergence speed and stability. Some popular optimization algorithms include Adam~\cite{kingma2014adam}, RMSprop~\cite{graves2013generating}, and Adagrad~\cite{duchi2011adaptive}. These algorithms use different strategies to update the parameters of the model and can be more effective than standard gradient descent in certain situations. 
 
 \subsubsection{Generalization}
 A key concept in evaluating model performance or generalization ability in such task is the empirical generalization error $E_{gen}$. This is a measure of how well the model generalizes to unseen data, which can be calculated as the difference between the training accuracy and the test accuracy. It is defined as
@@ -362,6 +399,62 @@ $ C_E(u)$  is the eigenvector centrality of node $u$.
 \newpage
 
 \subsubsection{Generalization error of SGC model}
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{|l|l|l|}
+    \hline
+        Name & Ave. generalization error & Standard deviation \\ \hline
+        PROTEINS\_full & 0.04741409420967102 & 0.5624663829803467 \\ \hline
+        DD & -0.21720178425312042 & 0.40132829546928406 \\ \hline
+        ENZYMES & 0.3279166519641876 & 0.060605552047491074 \\ \hline
+        KKI & 0.10951493680477142 & 0.24877962470054626 \\ \hline
+        OHSU & 0.07604396343231201 & 0.1943538784980774 \\ \hline
+        Peking\_1 & 0.1769927442073822 & 0.22724425792694092 \\ \hline
+        COLORS-3 & 0.11781251430511475 & 0.04669201001524925 \\ \hline
+        SYNTHETIC & -0.37541666626930237 & 0.4494529068470001 \\ \hline
+        SYNTHETICnew & -0.36666664481163025 & 0.46157106757164 \\ \hline
+        Synthie & 0.13749998807907104 & 0.042466290295124054 \\ \hline
+        AIDS & 0.006437480449676514 & 0.011520843021571636 \\ \hline
+        BZR & 0.10815385729074478 & 0.21917256712913513 \\ \hline
+        BZR\_MD & 0.1678861677646637 & 0.09830881655216217 \\ \hline
+        COX2 & 0.07495072484016418 & 0.13212721049785614 \\ \hline
+        COX2\_MD & 0.14868313074111938 & 0.16540752351284027 \\ \hline
+        DHFR & 0.1332409381866455 & 0.1551705300807953 \\ \hline
+        DHFR\_MD & 0.0777045264840126 & 0.2503173351287842 \\ \hline
+        ER\_MD & -0.008367183618247509 & 0.15631815791130066 \\ \hline
+        FRANKENSTEIN & 0.10787498950958252 & 0.05383045971393585 \\ \hline
+        MCF-7 & 0.35490626096725464 & 0.17573890089988708 \\ \hline
+        MCF-7H & 0.3593124747276306 & 0.1884346306324005 \\ \hline
+        MOLT-4 & 0.18021871149539948 & 0.39803561568260193 \\ \hline
+        MOLT-4H & 0.18649999797344208 & 0.3838197886943817 \\ \hline
+        Mutagenicity & 0.04325000196695328 & 0.028246337547898293 \\ \hline
+        MUTAG & 0.07375730574131012 & 0.13988283276557922 \\ \hline
+        NCI1 & 0.09100000560283661 & 0.16161812841892242 \\ \hline
+        NCI109 & -0.06128125637769699 & 0.2943810522556305 \\ \hline
+        NCI-H23 & 0.31696873903274536 & 0.07884199917316437 \\ \hline
+        NCI-H23H & 0.3696562349796295 & 0.06490368396043777 \\ \hline
+        OVCAR-8 & 0.3291874825954437 & 0.0815950483083725 \\ \hline
+        OVCAR-8H & 0.2902187705039978 & 0.0771569237112999 \\ \hline
+        P388 & 0.3618437647819519 & 0.13428252935409546 \\ \hline
+        P388H & -0.052218757569789886 & 0.3646376132965088 \\ \hline
+        PC-3 & -0.08028124272823334 & 0.29225972294807434 \\ \hline
+        PC-3H & 0.2593437135219574 & 0.22314861416816711 \\ \hline
+        PTC\_FM & 0.10863511264324188 & 0.14730817079544067 \\ \hline
+        PTC\_FR & 0.08632432669401169 & 0.09645862877368927 \\ \hline
+        PTC\_MM & 0.09649830311536789 & 0.0817335695028305 \\ \hline
+        PTC\_MR & 0.060720354318618774 & 0.18291200697422028 \\ \hline
+        SF-295 & 0.3124375343322754 & 0.11770480871200562 \\ \hline
+        SF-295H & 0.28881245851516724 & 0.12331245839595795 \\ \hline
+        SN12C & 0.2917812764644623 & 0.05537300556898117 \\ \hline
+        SN12CH & 0.3397812247276306 & 0.09572991728782654 \\ \hline
+        SW-620 & 0.3427812457084656 & 0.2430398166179657 \\ \hline
+        SW-620H & 0.39274999499320984 & 0.1998475342988968 \\ \hline
+        UACC257 & -0.10218751430511475 & 0.2883416414260864 \\ \hline
+        UACC257H & 0.3322499692440033 & 0.22775331139564514 \\ \hline
+        Yeast & 0.0 & 0.0 \\ \hline
+        YeastH & 0.0 & 0.0 \\ \hline
+    \end{tabular}
+\end{table}
 
 \subsubsection{Generalization error of GATv2 model}
 
