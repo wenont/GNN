@@ -34,6 +34,16 @@ def train_procedure(dataset_name: str,  model_name: str, trainParams, is_wandb=F
             dropout=trainParams.dropout,
             residual=trainParams.residual
         ).to(device)
+    elif model_name == 'MPNN':
+        model = get_model(
+            model_name=model_name,
+            in_channels=dataset.num_features,
+            hidden_channels=trainParams.hidden_size,
+            out_channels=dataset.num_classes,
+            num_hidden_layers=trainParams.num_hidden_layers,
+            norm=trainParams.normlization,
+            mlp_hidden_dim=trainParams.mlp_hidden_dim
+        ).to(device)
     else:
         model = get_model(
             model_name=model_name,      
@@ -221,6 +231,8 @@ def hyperparameter_tuning(config=None):
             trainParams.heads = config.heads
             trainParams.dropout = config.dropout
             trainParams.residual = config.residual
+        if config.model_name == 'MPNN':
+            trainParams.mlp_hidden_dim = config.mlp_hidden_dim
 
         # trainParams = {
         #     'hidden_size': config.hidden_size,
