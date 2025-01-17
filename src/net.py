@@ -142,20 +142,20 @@ class SGC(nn.Module):
 
 
 class MPNN(nn.Module):
-    def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int, norm: str = 'batch'):
+    def __init__(self, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int, norm: str = 'batch', mlp_hidden_dim: int = 32):
         super().__init__()
         self.nn1 = nn.Sequential(
-            nn.Linear(1, 32),
+            nn.Linear(1, mlp_hidden_dim),
             nn.ReLU(),
-            nn.Linear(32, in_channels * hidden_channels)
+            nn.Linear(mlp_hidden_dim, in_channels * hidden_channels)
         )
         self.conv1 = NNConv(in_channels, hidden_channels, self.nn1)
         self.convs = nn.ModuleList([
             NNConv(hidden_channels, hidden_channels,
                 nn.Sequential(
-                    nn.Linear(1, 32),
+                    nn.Linear(1, mlp_hidden_dim),
                     nn.ReLU(),
-                    nn.Linear(32, hidden_channels * hidden_channels)
+                    nn.Linear(mlp_hidden_dim, hidden_channels * hidden_channels)
                 ))
             for _ in range(num_hidden_layers)
         ])
@@ -189,9 +189,9 @@ class MPNN(nn.Module):
         self.fc2.reset_parameters()
 
 
-def get_model(model_name: str, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int = 4, norm: str = 'batch', heads: int = 1, concat: bool = True, dropout: float = 0, residual: bool = False):
+def get_model(model_name: str, in_channels: int, hidden_channels: int, out_channels: int, num_hidden_layers: int = 4, norm: str = 'batch', heads: int = 1, concat: bool = True, dropout: float = 0, residual: bool = False, mlp_hidden_dim = 32):
     if model_name == 'MPNN':
-        return MPNN(in_channels, hidden_channels, out_channels, num_hidden_layers, norm)
+        return MPNN(in_channels, hidden_channels, out_channels, num_hidden_layers, norm, mlp_hidden_dim)
     elif model_name == 'GCN':
         return GCN(in_channels, hidden_channels, out_channels, num_hidden_layers, norm)
     elif model_name == 'GAT':
