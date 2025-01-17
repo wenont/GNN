@@ -7,7 +7,7 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--project_name", help="project name", default='bt_GATv2')
+parser.add_argument("-p", "--project_name", help="project name", default='bt_MPNN')
 parser.add_argument("-i", "--sweep_id", help="sweep id")
 args = parser.parse_args()
 
