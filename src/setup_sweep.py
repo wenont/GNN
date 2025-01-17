@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 print(f'Temporary flag: {args.temporory}')
 
-project_name = 'bt_GATv2'
+project_name = 'bt_MPNN'
 path = osp.join(osp.dirname(__file__), '..', 'data', 'test_dataset.txt')
 dataset_list = read_file_to_list(path)
 
