@@ -38,13 +38,13 @@ else:
     DATAPATH = 'data/test_dataset.txt'
 
 
-def calculate_generalation_error():
-    project_name = 'bt_SGC'
-    path = osp.join(osp.dirname(__file__), 'results', f'best_hyperparameters_{project_name}.csv')
-    best_hyperparameters = pd.read_csv(path)
+def calculate_generalation_error(file_path: str):
+    if file_path is None:
+        project_name = 'bt_SGC'
+        file_path = osp.join(osp.dirname(__file__), 'results', f'best_hyperparameters_{project_name}.csv')
+    best_hyperparameters = pd.read_csv(file_path)
     
     for i in range(len(best_hyperparameters)):
-        
         dataset_name = best_hyperparameters.loc[i, 'dataset_name']
         model_name = best_hyperparameters.loc[i, 'model_name']
         batch_size = best_hyperparameters.loc[i, 'batch_size'].item()
@@ -76,7 +76,7 @@ def calculate_generalation_error():
             'Ave. generalization error': [generalization_error],
             'Standard deviation': [standard_deviation]
         })
-        df.to_csv(f'results/generalization_error_{project_name}.csv', mode='a')
+        df.to_csv(f'results/generalization_error_{project_name}.csv', mode='a', header=not os.path.exists(f'results/generalization_error_{project_name}.csv'))
 
 
 def calcualte_parameters():
@@ -371,9 +371,10 @@ def handle_option(option):
 
 
 if __name__ == '__main__':
-    # Set default as interactive mode, user can choose the option
-    # Otherwise, use args to run the specific function
-    if args.function:
-        handle_option(args.function)
-    else:
-        interactive_mode()
+    # # Set default as interactive mode, user can choose the option
+    # # Otherwise, use args to run the specific function
+    # if args.function:
+    #     handle_option(args.function)
+    # else:
+    #     interactive_mode()
+    get_best_hyperparameters()
