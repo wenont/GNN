@@ -111,48 +111,78 @@ The following section provides an overview of the related work.
 
 
 \section{Background on learning on graphs}
-The following sections provide an overview of the concepts and methods related to graph learning, machine learning, and graph neural networks. 
+The following sections provide an overview of the concepts and methods related to graph theory, machine learning, and graph neural networks. 
 
 \subsection{Notion}
 At first, we need to define some terms with regard to the graph. In graph theory, we assume that $G=(V,E)$ is an undirected graph, where $V$ is the set of nodes and $E  \subseteq \{\{v,w\}\mid v,w \in V , v \neq w\}$ is the set of edges. We use $\mathbb{G}$ to represent the set of all possible graphs. The neighborhood of a node $v$ is denoted as $N(v)$, defined as $N(v) = \{w \mid \{v,w\} \in E\}$. The degree of a node $v$, denoted as $d(v)$, is the number of neighbors of $v$, that is, $d(v) = |N(v)|$. In addition to the nodes and edges that comprise the graph, we can attach a more complex set of data to each node.  A feature vector $x_n\in \mathbb{R}^k$, is attached to a node $v_n$, and in some cases, edge feature vectors are also included. These vectors can be used to characterize graphs or nodes in graphs. The adjacency matrix $A \in \mathbb{R}^{|V| \times |V|}$ is a matrix that represents the connections between nodes in the graph. The element $a_{ij}$ of the adjacency matrix is 1 if there is an edge between node $v_i$ and node $v_j$, and 0 otherwise.
 
 \subsection{Machine learning}
-Machine learning is a subfield of artificial intelligence that focuses on the development of algorithms that can learn from and make predictions or decisions based on data. The goal of machine learning is to develop models that can generalize well to unseen data. The model is trained on a training dataset, which consists of input-output pairs. The model is then evaluated on a test dataset, which is separate from the training dataset. 
+In the following section, we provide an overview of the concepts and methods related to machine learning. 
+
+\subsubsection{Supervised learning}
+Machine learning can be roughly divided into three categories: supervised learning, unsupervised learning, and reinforcement learning~\cite{bishop2006pattern}.
+
+Supervised learning is a type of machine learning that involves training a model on a labeled dataset. The model is trained to learn the relationship between the input features and the output labels. The goal is to learn a mapping from the input features to the output labels so that the model can make predictions on new, unseen data. One common task in supervised learning is classification, where the goal is to assign each input vector to one of a finite number of classes (categories). In the graph learning context, the predicted output can be a label for each node in the graph, a label for the entire graph, or a label for each edge in the graph, e.g. node classification, graph classification, and link prediction~\cite{velivckovic2023everything}.
+
+\subsubsection{Feed-forward neural networks}
+
+Feed-forward neural networks, also known as multilayer perceptrons (MLPs), are a type of neural network that consists of multiple layers of neurons. The neurons in each layer are connected to the neurons in the next layer, and the output of each neuron is computed as a weighted sum of the inputs followed by a non-linear activation function. The output of the network is computed by passing the input through the network and computing the output of the final layer. The weights of the network are learned using an optimization algorithm such as gradient descent. Feed-forward neural networks are a powerful tool for learning complex patterns in data and have been successfully applied to a wide range of tasks, such as image recognition, speech recognition, and natural language processing.
+
+The function of a feed-forward neural network can be written as
+
+$$ 
+    y = f(W^{(L)} \cdot f(W^{(L-1)} \cdot \ldots \cdot f(W^{(1)} \cdot x + b^{(1)}) + b^{(2)}) + \ldots + b^{(L)})
+$$
+
+where $x$ is the input vector, $W^{(i)}$ and $b^{(i)}$ are the weights and biases of the $i$-th layer, and $f$ is the activation function. The output $y$ is the predicted output of the network.
+
+\subsubsection{Loss function}
+The loss function is a function that measures the difference between the predicted output of a model and the true output. The goal of training a machine learning model is to minimize the loss function, which is done by adjusting the parameters of the model using an optimization algorithm such as gradient descent. The choice of loss function depends on the task at hand. For classification tasks, the cross-entropy loss function is commonly used, while for regression tasks, the mean squared error loss function is often used.
+
+The cross-entropy loss function is defined as 
+
+$$
+    L(y, \hat{y}) = -\sum_{i} y_i \log(\hat{y}_i)
+$$
+
+where $y$ is the true output, $\hat{y}$ is the predicted output, and $i$ is the index of the classes. The cross-entropy loss function is used to measure the difference between the true output and the predicted output of a classification model.
+
+\subsubsection{Activation function}
+An activation function is a non-linear function that is applied to the output of a neuron in a neural network. The activation function introduces non-linearity into the network, allowing it to learn complex patterns in the data. There are many activation functions that can be used in neural networks, such as the sigmoid function, the tanh function, and the ReLU function. The ReLU function is one of the most commonly used activation functions in deep learning because it is simple and computationally efficient. The ReLU function is defined as
+
+$$
+    \text{ReLU}(\cdot)=\max(0,\cdot)
+$$
+
+The ReLU function is used to introduce non-linearity into the network and has been shown to be effective in training deep neural networks.
+
 
 \subsubsection{Gradient Descent}
 Gradient descent is an optimization algorithm used to minimize a function by iteratively moving in the direction of the steepest decrease of the function. The algorithm works by computing the gradient of the function at a given point and then updating the point in the direction of the negative gradient. The update rule is given by
 
 $$
-    \theta_{t+1} = \theta_t - \alpha \nabla f(\theta_t)
+    W^{(t+1)} = W^{(t)} - \alpha \nabla f(W^{(t)})
 $$
-where $\theta_t$ is the parameter vector at iteration $t$, $\alpha$ is the learning rate, and $\nabla f(\theta_t)$ is the gradient of the function $f$ at $\theta_t$. The learning rate $\alpha$ is a hyperparameter that controls the step size of the update.
+where $W^{(t)}$ is the parameter vector at iteration $t$, $\alpha$ is the learning rate, and $\nabla f(W^{(t)})$ is the gradient of the function $f$ with respect to the parameters $W^{(t)}$. The learning rate $\alpha$ is a hyperparameter that controls the step size of the update. Gradient descent is a popular optimization algorithm used in machine learning to train neural networks and other models.
 
 \subsubsection{Stochastic Gradient Descent}
 Stochastic gradient descent (SGD) is a variant of gradient descent that uses a random sample of the training data to compute the gradient at each iteration. The algorithm works by randomly selecting a mini-batch of data points from the training dataset, computing the gradient of the loss function with respect to the mini-batch, and then updating the parameters based on the gradient. The update rule is given by
 
 $$
-    \theta_{t+1} = \theta_t - \alpha \nabla f(\theta_t; x_{i:t}, y_{i:t})
+    W^{(t+1)} = W^{(t)} - \alpha \nabla f(W^{(t)}, x^{(t)})
 $$
-where $x_{i:t}$ and $y_{i:t}$ are the mini-batch of data points and labels, respectively. The learning rate $\alpha$ is a hyperparameter that controls the step size of the update.
-
-
-\subsubsection{Backpropagation}
-Backpropagation is an algorithm used to compute the gradients of the loss function with respect to the parameters of a neural network. The algorithm works by computing the gradient of the loss function with respect to the output of the network and then propagating the gradient backward through the network to compute the gradients of the loss function with respect to the parameters. The gradients are then used to update the parameters of the network using an optimization algorithm such as gradient descent.
-
-\subsubsection{Regularization}
-Regularization is a technique used to prevent overfitting in machine learning models. Overfitting occurs when a model learns the noise in the training data rather than the underlying pattern. Regularization works by adding a penalty term to the loss function that discourages the model from learning complex patterns that are specific to the training data. There are two common types of regularization: $L1$ regularization and $L2$ regularization. $L1$ regularization adds a penalty term that is proportional to the $L1$ norm of the parameters, while $L2$ regularization adds a penalty term that is proportional to the $L2$ norm of the parameters. The regularization parameter $\lambda$ controls the strength of the regularization.
+where $x^{(t)}$ is a mini-batch of data points from the training dataset. Stochastic gradient descent is more computationally efficient than standard gradient descent and can be used to train large-scale machine learning models.
 
 \subsubsection{Early Stopping}
-Early stopping is a technique used to prevent overfitting in machine learning models. The idea is to monitor the performance of the model on a validation dataset during training and stop training when the performance starts to degrade. This is done by saving the model parameters at each iteration and selecting the model with the best performance on the validation dataset. Early stopping is a form of regularization that prevents the model from learning the noise in the training data.
+Early stopping is a technique used to prevent overfitting in machine learning models. The idea is to monitor the performance of the model on a validation dataset during training and stop training when the performance starts to degrade. This is done by keeping track of the validation loss and stopping training when the validation loss stops decreasing or starts to increase. Early stopping is used to prevent the model from memorizing the training data and to obtain a more generalizable model. 
 
 \subsubsection{Cross-validation}
 Cross-validation is a technique used to evaluate the performance of a machine learning model. The idea is to split the dataset into multiple subsets, or folds, and train the model on one subset while evaluating it on the remaining subsets. This process is repeated multiple times, with each subset used as the test set once. The performance of the model is then averaged over all the folds to obtain an estimate of the model's generalization performance. Cross-validation is used to prevent overfitting and to obtain a more accurate estimate of the model's performance.
 
 \subsubsection{Hyperparameter tuning}
-Hyperparameter tuning is the process of selecting the optimal hyperparameters for a machine learning model. Hyperparameters are parameters that are set before the training process begins and control the behavior of the model. Examples of hyperparameters include the learning rate, batch size, number of hidden layers, and number of epochs. Hyperparameter tuning is typically done using a grid search or random search over a predefined set of hyperparameters. The goal is to find the set of hyperparameters that results in the best performance on a validation dataset.
+Hyperparameter tuning is the process of selecting the optimal hyperparameters for a machine learning model. Hyperparameters are parameters that are set before the training process begins and control the behavior of the model. Examples of hyperparameters include the learning rate, batch size, number of hidden layers, and number of epochs. Hyperparameter tuning is an important step in the machine learning pipeline and can have a significant impact on the performance of the model. There are many techniques for hyperparameter tuning, such as grid search, random search, and Bayesian optimization. In this thesis, Bayesian optimization is used to tune the hyperparameters of the models.
 
-\subsubsection{Loss function}
-The loss function is a function that measures the difference between the predicted output of a model and the true output. The goal of training a machine learning model is to minimize the loss function, which is done by adjusting the parameters of the model using an optimization algorithm such as gradient descent. The choice of loss function depends on the task at hand. For classification tasks, the cross-entropy loss function is commonly used, while for regression tasks, the mean squared error loss function is often used.
+Bayesian optimization is more efficient than grid search and random search because it uses a probabilistic model to guide the search for the optimal hyperparameters. The idea is to model the objective function (e.g. the validation accuracy of the model) as a Gaussian process and use the model to select the next set of hyperparameters to evaluate. This process is repeated until the optimal hyperparameters are found.
 
 \subsubsection{Optimization algorithm}
 An optimization algorithm is an algorithm used to minimize a function by iteratively updating the parameters of the model. The goal is to find the set of parameters that minimizes the loss function. Gradient descent is a common optimization algorithm used in machine learning, but there are many variants of gradient descent that are designed to improve convergence speed and stability. Some popular optimization algorithms include Adam~\cite{kingma2014adam}, RMSprop~\cite{graves2013generating}, and Adagrad~\cite{duchi2011adaptive}. These algorithms use different strategies to update the parameters of the model and can be more effective than standard gradient descent in certain situations. 
@@ -170,7 +200,52 @@ The empirical generalization error is also known as the generalization gap~\cite
 \subsection{Graph Neural Networks}
 Graph Neural Networks (GNNs) are a class of neural networks that can operate on graph-structured data. GNNs use the structure of a graph to perform "message passing", allowing information to propagate across nodes and edges. The key idea is to iteratively aggregate and update node features by exchanging information with local neighboring nodes, which allows GNNs to capture the structural information of the graph. This information is then used to make predictions. GNNs have been demonstrated to be effective in a wide range of tasks, such as node classification, edge prediction, and graph classification. Popular GNNs in recent years include Graph Convolutional Networks (GCN), Graph Attention Networks (GAT), and Message Passing Neural Networks (MPNN).
 
-\subsection{Graph parameters}
+In the following sections, we provide an overview of the methods related to this thesis.
+
+\subsubsection{Graph Convolutional Networks (GCN)}
+
+Graph Convolutional Networks (GCNs) are a class of neural networks that can operate on graph-structured data. The GCN model $f(X, A)$, as proposed by Kipf and Welling~\cite{kipf2016semi}, is defined as
+
+$$ 
+ H^{(l+1)} = \sigma(\tilde{D}^{-\frac{1}{2}}\tilde{A}\tilde{D}^{-\frac{1}{2}}H^{(l)}W^{(l)})
+$$
+
+where $H^{(l)}\in \mathbb{R}^{N\times D}$ is the node feature matrix at layer $l$; $H^{(0)} = X$. $\tilde{A} = A + I$ is the adjacency matrix of the graph with self-connections added, $\tilde{D}$ is the degree matrix of $\tilde{A}$, $W^{(l)}$ is the weight matrix of the layer, and $\sigma$ is the activation function, such as the $\text{ReLU}(\cdot)=\max(0,\cdot)$. The GCN layer aggregates information from neighboring nodes and updates the node features by applying a linear transformation followed by a non-linear activation function. The output of the GCN layer is the node feature matrix at the next layer. The GCN layer can be stacked to create deep GCN models, which have been shown to be effective in a wide range of tasks, such as node classification, edge prediction, and graph classification.
+
+
+\subsubsection{Simplified Graph Convolution (SGC)}
+
+Simplified Graph Convolution (SGC)~\cite{wu2019simplifying} is a simplified version of the GCN model that removes the non-linear activation function and the normalization of the adjacency matrix. The SGC model is defined as
+
+$$
+ X' = (\tilde{D}^{-\frac{1}{2}}\tilde{A}\tilde{D}^{-\frac{1}{2}})^K XW
+$$
+
+where $X$ is the node feature matrix, $W$ is the weight matrix, $\tilde{A}$ is the adjacency matrix with self-connections added, $\tilde{D}$ is the degree matrix of $\tilde{A}$, and $K$ is the number of layers. 
+
+
+\subsubsection{Graph Attention Networks (GAT)}
+
+Graph Attention Networks (GAT)~\cite{velickovic2020pointer} are a class of neural networks that use attention mechanisms to aggregate information from neighboring nodes. The GAT model is defined as
+
+$$
+    h_i^{(l+1)} = \sigma(\sum_{j\in N(i)}\alpha_{ij}^{(l)}W^{(l)}h_j^{(l)})
+$$
+
+where $h_i^{(l)}$ is the node feature vector of node $i$ at layer $l$, $W^{(l)}$ is the weight matrix of the layer, $\sigma$ is the activation function, and $\alpha_{ij}^{(l)}$ is the attention coefficient between node $i$ and node $j$ at layer $l$. The attention coefficient is computed as
+
+
+
+\subsubsection{Message Passing Neural Networks (MPNN)}
+Message Passing Neural Networks (MPNNs)~\cite{gilmer2017neural} has been the leading model for graph learning. The MPNN model is defined as 
+
+$$
+    m_i^{(t+1)} = \sum_{j\in N(i)}M^{(t)}(h_i^{(t)}, h_j^{(t)}, e_{ij})
+$$
+
+where $m_i^{(t)}$ is the message vector of node $i$ at iteration $t$, $M^{(t)}$ is the message function, $h_i^{(t)}$ is the node feature vector of node $i$ at iteration $t$, $e_{ij}$ is the edge feature vector between node $i$ and node $j$, and $N(i)$ is the neighborhood of node $i$. The message function $M^{(t)}$ is a neural network that takes as input the node feature vectors of node $i$ and node $j$, and the edge feature vector between them, and outputs the message vector $m_i^{(t)}$.
+
+\subsection{Graph parameters} \label{sec:graph_parameters}
 Now we can introduce the concept of a graph parameter. A graph parameter is a function $f: \mathbb{G} \rightarrow \mathbb{R}^d$ for $d\in \mathbb{N} >0$, which maps a graph to a d-dimensional vector over the reals. Furthermore, such functions need to be permutation invariant, i.e., $f(G) = f(\pi(G))$ for any permutation $\pi$ of the nodes of $G$, where a permutation is a function $\pi: V \rightarrow V$ and $\pi(G)$ denotes the graph obtained by permuting the nodes of $G$ according to $\pi$. A graph parameter allows us to quantify certain properties of a graph, from the basic structural numbers (number of nodes, number of edges, average degree, etc.) to distance properties (average shortest path length, diameter, etc.) to more complex properties (graph clustering coefficient, average number of coloring in the 1-WL algorithm, etc.). This thesis will focus on seven graph parameters, with definitions provided in section~\ref{sec:graph_parameters}.
 
 \section{Experimental study}
@@ -201,8 +276,8 @@ In the experiment, I plan to use different GNN layers in the model, including Gr
 \subsubsection{Experimental details}
 The Adam optimizer~\cite{kingma2014adam} is considered to be employed in the model. To prevent overfitting and to optimize the use of time, the early stopping is employed. The loss function is defined as the cross-entropy loss function. The hyperparameters of the model are considered to be tuned. The hyperparameters include the learning rate, batch size, hidden dimension, number of epochs, and patience in early stopping. The generalization error is calculated as the difference between the training accuracy and the test accuracy.
 
-\subsubsection{Graph Parameters Under Investigation} \label{sec:graph_parameters}
-As graph parameters defined abstractly in the section~\ref{sec:intro}, I give here the concrete definition of the graph parameters.
+\subsubsection{Graph Parameters Under Investigation}
+As graph parameters defined abstractly in the section~\ref{sec:graph_parameters}, I give here the concrete definition of the graph parameters that are used in the experiment. The graph parameters are calculated for each dataset and used as input features for the model. The graph parameters are calculated using the NetworkX library~\cite{hagberg2008exploring}.
 
 \begin{description}
     \item [Average degree] The average degree of the graph $d_{avg}$ is defined as the average of the degrees of all nodes in the graph, that is
