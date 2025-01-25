@@ -90,7 +90,7 @@ The goal of this bachelor thesis is to understand empirically how graph paramete
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
-Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs), also known as deep learning on graphs, are a class of neural networks that can operate on graph-structured data, such as social networks~\cite{easley2010networks}, biological networks~\cite{barabasi2004network}, and images~\cite{simonovsky2017dynamic}. GNNs use the structure of a graph to perform "message passing", allowing information to propagate across nodes and edges. The key idea is to iteratively aggregate and update node features by exchanging information with local neighboring nodes, which allows GNNs to capture the structural information of the graph. This information is then used to make predictions. GNNs have been demonstrated to be effective in a wide range of tasks, such as node classification~\cite{hamilton2017inductive}, edge prediction~\cite{morselli2021network}, and graph classification~\cite{gilmer2017neural}. Popular GNNs in recent years include Graph Convolutional Networks (GCN)~\cite{kipf2016semi}, Graph Attention Networks (GAT)~\cite{velickovic2020pointer}, and Message Passing Neural Networks (MPNN)~\cite{gilmer2017neural}.  
+Graph learning became a hot topic in the field of machine learning in recent years. Graph Neural Networks (GNNs)~\cite{gori2005new}, also known as deep learning on graphs, are a class of neural networks that can operate on graph-structured data, such as social networks~\cite{easley2010networks}, biological networks~\cite{barabasi2004network}, and images~\cite{simonovsky2017dynamic}. GNNs use the structure of a graph to perform "message passing", allowing information to propagate across nodes and edges. The key idea is to iteratively aggregate and update node features by exchanging information with local neighboring nodes, which allows GNNs to capture the structural information of the graph. This information is then used to make predictions. GNNs have been demonstrated to be effective in a wide range of tasks, such as node classification~\cite{hamilton2017inductive}, edge prediction~\cite{morselli2021network}, and graph classification~\cite{gilmer2017neural}. Popular GNNs in recent years include Graph Convolutional Networks (GCN)~\cite{kipf2016semi}, Graph Attention Networks (GAT)~\cite{velickovic2020pointer}, and Message Passing Neural Networks (MPNN)~\cite{gilmer2017neural}.  
 
 However, the behavior of GNNs is not well understood. Particularly, the relationship between graph parameters/characteristics and the empirical generalization error of GNNs is not clear.  The goal of this bachelor thesis is to understand empirically how graph parameters/characteristics impact the generalization error of GNNs. 
 
@@ -99,15 +99,21 @@ First, I calculate the graph parameters for a set of datasets: Each graph has it
 
 
 \subsection{Related work}
-The following section provides an overview of the related work.
+In the following section, I provide an overview of the related work on the generalization of neural networks, including feed-forward neural networks, recurrent neural networks, and graph neural networks.
 
-\subsubsection{Graph parameters}
+\subsubsection{Graph Neural Networks}
+Graph neural networks were initially proposed by Gori et al.~\cite{gori2005new} and Scarselli et al.~\cite{scarselli2008graph} as a variant of recurrent neural networks and demonstrated its generalization capabilities. The work of Kipf and Welling~\cite{kipf2016semi} introduced the Graph Convolutional Networks (GCN) model, which received widespread attention from the research community. Velickovic et al.~\cite{velickovic2020pointer} proposed the Graph Attention Networks (GAT) model, which uses attention mechanisms to aggregate information from neighboring nodes. Brody et al.~\cite{brody2021attentive} proposed the GATv2 model, which improves the performance of the GAT model by introducing residual connections and multi-head attention. Gilmer et al.~\cite{gilmer2017neural} introduced the Message Passing Neural Networks (MPNN) model, which demonstrated the significant results on the molecular property prediction benchmark;
 
+\subsubsection{Generalization}
+While significant progress has been made in understanding the generalization properties of feed-forward neural networks (FNNs) and recurrent neural networks (RNNs), the generalization abilities of graph neural networks (GNNs) remain less explored due to their of irregular graph structures.
 
-\subsubsection{Generalization error}
+Golowich et al.~\cite{golowich2018size} showed the generalization abilities of Feed-forward neural networks (FNNs) with Rademacher complexity. The work of Zhang et al.~\cite{zhang2018stabilizing} used SVD-based parameterization to improve the generalization by effectively addressing gradient issues.
 
+In terms of Recurrent neural networks(RNNs), Chen et al.~\cite{chen2019generalization} studied the generalization properties of vanilla RNNs as well as their variants. Z. Allen-Zhu et al.~\cite{allen2019can} demonstrates that vanilla SGD enables RNNs to efficiently learn concept classes and overcomes prior exponential generalization bounds. 
 
+But unlike the FNNs and RNNs, GNNs deal with irregular data structures. The related work on the generalization of GNNs is limited. Scarselli et al.~\cite{scarselli2018vapnik} explored the generalization ability of GNNs by using the Vapnik-Chervonenkis (VC) dimension and further indicated that the generalization ability of such models improve as the number of connected nodes. After that, Garg et al.~\cite{garg2020generalization} studied the generalization ability of GNNs via Rademacher bounds. In comparison to the work of Scarselli et al., Garg et al. provided a tighter bound on the generalization error of GNNs.
 
+Nevertheless, Morris et al.~\cite{morris2024futuredirectionstheorygraph} pointed out that the generalization ability of GNNs is still not well understood. The bounds established in these studies typically rely solely on general graph parameters, such as the maximum degree or total number of nodes, often overlooking more expressive graph parameters.
 
 
 \section{Background on learning on graphs}
@@ -126,7 +132,7 @@ Supervised learning is a type of machine learning that involves training a model
 
 \subsubsection{Feed-forward neural networks}
 
-Feed-forward neural networks, also known as multilayer perceptrons (MLPs), are a type of neural network that consists of multiple layers of neurons. The neurons in each layer are connected to the neurons in the next layer, and the output of each neuron is computed as a weighted sum of the inputs followed by a non-linear activation function. The output of the network is computed by passing the input through the network and computing the output of the final layer. The weights of the network are learned using an optimization algorithm such as gradient descent. Feed-forward neural networks are a powerful tool for learning complex patterns in data and have been successfully applied to a wide range of tasks, such as image recognition, speech recognition, and natural language processing.
+Feed-forward neural networks, also known as multilayer perceptrons (MLPs), are a type of neural network that consists of multiple layers of neurons. The neurons in each layer are connected to the neurons in the next layer, and the output of each neuron is computed as a weighted sum of the inputs followed by a non-linear activation function. The output of the network is computed by passing the input through the network and computing the output of the final layer. The weights of the network are learned by using an optimization algorithm such as gradient descent. Feed-forward neural networks are a powerful tool for learning complex patterns in data and have been successfully applied to a wide range of tasks, such as image recognition, speech recognition, and natural language processing.
 
 The function of a feed-forward neural network can be written as
 
@@ -134,7 +140,7 @@ $$
     y = f(W^{(L)} \cdot f(W^{(L-1)} \cdot \ldots \cdot f(W^{(1)} \cdot x + b^{(1)}) + b^{(2)}) + \ldots + b^{(L)})
 $$
 
-where $x$ is the input vector, $W^{(i)}$ and $b^{(i)}$ are the weights and biases of the $i$-th layer, and $f$ is the activation function. The output $y$ is the predicted output of the network.
+where $x$ is the input vector, $W^{(i)}$ and $b^{(i)}$ are the weights and biases of the $i$-th layer, and $f$ is the activation function. The output $y$ is the predicted output of the network. $L$ is denoted as the depth of the network.
 
 \subsubsection{Loss function}
 The loss function is a function that measures the difference between the predicted output of a model and the true output. The goal of training a machine learning model is to minimize the loss function, which is done by adjusting the parameters of the model using an optimization algorithm such as gradient descent. The choice of loss function depends on the task at hand. For classification tasks, the cross-entropy loss function is commonly used, while for regression tasks, the mean squared error loss function is often used.
@@ -225,25 +231,45 @@ where $X$ is the node feature matrix, $W$ is the weight matrix, $\tilde{A}$ is t
 
 
 \subsubsection{Graph Attention Networks (GAT)}
-
-Graph Attention Networks (GAT)~\cite{velickovic2020pointer} are a class of neural networks that use attention mechanisms to aggregate information from neighboring nodes. The GAT model is defined as
+Graph Attention Networks (GAT) are a class of neural networks that use attention mechanisms to aggregate information from neighboring nodes. The GAT model updates the feature representation of a node by assigning different importance scores, known as attention coefficients, to its neighbors. The updated node feature $\mathbf{h}_i^{(l+1)}$ at layer $l+1$ is given by:
 
 $$
-    h_i^{(l+1)} = \sigma(\sum_{j\in N(i)}\alpha_{ij}^{(l)}W^{(l)}h_j^{(l)})
+\mathbf{h}_i^{(l+1)} = \sigma \left( \sum_{j \in \mathcal{N}(i)} \alpha_{ij}^{(l)} \mathbf{W}^{(l)} \mathbf{h}_j^{(l)} \right)
 $$
 
-where $h_i^{(l)}$ is the node feature vector of node $i$ at layer $l$, $W^{(l)}$ is the weight matrix of the layer, $\sigma$ is the activation function, and $\alpha_{ij}^{(l)}$ is the attention coefficient between node $i$ and node $j$ at layer $l$. The attention coefficient is computed as
+where $\mathbf{h}_i^{(l)}$ is the feature vector of node $i$ at layer $l$, $\mathbf{W}^{(l)}$ is a learnable weight matrix, $\sigma$ is an activation function, and $\alpha_{ij}^{(l)}$ is the attention coefficient between nodes $i$ and $j$. These coefficients are computed as:
 
+$$
+\alpha_{ij}^{(l)} = \frac{\exp \left( \text{LeakyReLU} \left( \mathbf{a}^{(l)^\top} [\mathbf{W}^{(l)} \mathbf{h}_i^{(l)} \| \mathbf{W}^{(l)} \mathbf{h}_j^{(l)}] \right) \right)}{\sum_{k \in \mathcal{N}(i)} \exp \left( \text{LeakyReLU} \left( \mathbf{a}^{(l)^\top} [\mathbf{W}^{(l)} \mathbf{h}_i^{(l)} \| \mathbf{W}^{(l)} \mathbf{h}_k^{(l)}] \right) \right)}
+$$
 
+where $\|$ denotes the concatenation of node features, and $\mathbf{a}^{(l)}$ is a shared attention vector. The softmax function ensures the attention coefficients sum to one for a node's neighbors.
+
+GAT is particularly effective for tasks where different neighbors contribute unequally to a node's representation. By using attention mechanisms, GAT dynamically weighs neighbor contributions, enabling more expressive feature aggregation compared to earlier methods like GCNs.
+
+\subsubsection{Graph Attention Networks v2 (GATv2)}
+Graph Attention Networks v2 (GATv2)~\cite{brody2021attentive} is an improved version of the GAT model that introduces residual connections and multi-head attention. The GATv2 model is defined as
+
+$$
+    \mathbf{h}_i^{(l+1)} = \sigma \left( \sum_{h=1}^{H} \sum_{j \in \mathcal{N}(i)} \alpha_{ij}^{(l,h)} \mathbf{W}^{(l,h)} \mathbf{h}_j^{(l)} \right) + \mathbf{h}_i^{(l)}
+$$
+
+where $H$ is the number of attention heads, $\alpha_{ij}^{(l,h)}$ is the attention coefficient between nodes $i$ and $j$ for head $h$, and $\mathbf{W}^{(l,h)}$ is the weight matrix for head $h$. The attention coefficients are computed as
+
+$$
+    \alpha_{ij}^{(l,h)} = \frac{\exp \left( \text{LeakyReLU} \left( \mathbf{a}^{(l,h)^\top} [\mathbf{W}^{(l,h)} \mathbf{h}_i^{(l)} \| \mathbf{W}^{(l,h)} \mathbf{h}_j^{(l)}] \right) \right)}{\sum_{k \in \mathcal{N}(i)} \exp \left( \text{LeakyReLU} \left( \mathbf{a}^{(l,h)^\top} [\mathbf{W}^{(l,h)} \mathbf{h}_i^{(l)} \| \mathbf{W}^{(l,h)} \mathbf{h}_k^{(l)}] \right) \right)}
+$$
+
+The GATv2 model uses multi-head attention to allow the model to attend to different parts of the input space. The model also introduces residual connections to improve the flow of information through the network. The GATv2 model has been shown to outperform the original GAT model on a wide range of tasks.
 
 \subsubsection{Message Passing Neural Networks (MPNN)}
-Message Passing Neural Networks (MPNNs)~\cite{gilmer2017neural} has been the leading model for graph learning. The MPNN model is defined as 
+Message Passing Neural Networks (MPNNs)~\cite{gilmer2017neural} have been the leading model for graph learning. The MPNN model operates by iteratively passing messages between nodes and updating their representations. At each iteration $t$, the message vector $m_i^{(t+1)}$ for node $i$ is computed as:
 
 $$
     m_i^{(t+1)} = \sum_{j\in N(i)}M^{(t)}(h_i^{(t)}, h_j^{(t)}, e_{ij})
 $$
 
-where $m_i^{(t)}$ is the message vector of node $i$ at iteration $t$, $M^{(t)}$ is the message function, $h_i^{(t)}$ is the node feature vector of node $i$ at iteration $t$, $e_{ij}$ is the edge feature vector between node $i$ and node $j$, and $N(i)$ is the neighborhood of node $i$. The message function $M^{(t)}$ is a neural network that takes as input the node feature vectors of node $i$ and node $j$, and the edge feature vector between them, and outputs the message vector $m_i^{(t)}$.
+where $m_i^{(t)}$ is the message vector of node $i$ at iteration $t$, $M^{(t)}$ is a learnable message function (typically implemented as a neural network, such as an MLP), $h_i^{(t)}$ is the node feature vector of node $i$ at iteration $t$, $h_j^{(t)}$ is the node feature vector of node $j$ at iteration $t$, $e_{ij}$ is the edge feature vector between node $i$ and node $j$, and $N(i)$ is the neighborhood of node $i$. The message function $M^{(t)}$ is a neural network that takes as input the node feature vectors of node $i$ and node $j$, and the edge feature vector between them, and outputs the message vector $m_i^{(t)}$.
 
 \subsection{Graph parameters} \label{sec:graph_parameters}
 Now we can introduce the concept of a graph parameter. A graph parameter is a function $f: \mathbb{G} \rightarrow \mathbb{R}^d$ for $d\in \mathbb{N} >0$, which maps a graph to a d-dimensional vector over the reals. Furthermore, such functions need to be permutation invariant, i.e., $f(G) = f(\pi(G))$ for any permutation $\pi$ of the nodes of $G$, where a permutation is a function $\pi: V \rightarrow V$ and $\pi(G)$ denotes the graph obtained by permuting the nodes of $G$ according to $\pi$. A graph parameter allows us to quantify certain properties of a graph, from the basic structural numbers (number of nodes, number of edges, average degree, etc.) to distance properties (average shortest path length, diameter, etc.) to more complex properties (graph clustering coefficient, average number of coloring in the 1-WL algorithm, etc.). This thesis will focus on seven graph parameters, with definitions provided in section~\ref{sec:graph_parameters}.
