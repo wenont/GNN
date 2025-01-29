@@ -1,0 +1,17 @@
+
+\subsection{Related work}
+In the following section, I provide an overview of the related work on the generalization of neural networks, including feed-forward neural networks, recurrent neural networks, and graph neural networks.
+
+\subsubsection{Graph Neural Networks}
+Graph neural networks were initially proposed by Gori et al.~\cite{gori2005new} and Scarselli et al.~\cite{scarselli2008graph} as a variant of recurrent neural networks and demonstrated its generalization capabilities. The work of Kipf and Welling~\cite{kipf2016semi} introduced the Graph Convolutional Networks (GCN) model, which received widespread attention from the research community. Velickovic et al.~\cite{velickovic2020pointer} proposed the Graph Attention Networks (GAT) model, which uses attention mechanisms to aggregate information from neighboring nodes. Brody et al.~\cite{brody2021attentive} proposed the GATv2 model, which improves the performance of the GAT model by introducing residual connections and multi-head attention. Gilmer et al.~\cite{gilmer2017neural} introduced the Message Passing Neural Networks (MPNN) model, which demonstrated the significant results on the molecular property prediction benchmark;
+
+\subsubsection{Generalization}
+While significant progress has been made in understanding the generalization properties of feed-forward neural networks (FNNs) and recurrent neural networks (RNNs), the generalization abilities of graph neural networks (GNNs) remain less explored due to their of irregular graph structures.
+
+Golowich et al.~\cite{golowich2018size} showed the generalization abilities of Feed-forward neural networks (FNNs) with Rademacher complexity. The work of Zhang et al.~\cite{zhang2018stabilizing} used SVD-based parameterization to improve the generalization by effectively addressing gradient issues.
+
+In terms of Recurrent neural networks(RNNs), Chen et al.~\cite{chen2019generalization} studied the generalization properties of vanilla RNNs as well as their variants. Z. Allen-Zhu et al.~\cite{allen2019can} demonstrates that vanilla SGD enables RNNs to efficiently learn concept classes and overcomes prior exponential generalization bounds. 
+
+But unlike the FNNs and RNNs, GNNs deal with irregular data structures. The related work on the generalization of GNNs is limited. Scarselli et al.~\cite{scarselli2018vapnik} explored the generalization ability of GNNs by using the Vapnik-Chervonenkis (VC) dimension and further indicated that the generalization ability of such models improve as the number of connected nodes. After that, Garg et al.~\cite{garg2020generalization} studied the generalization ability of GNNs via Rademacher bounds. In comparison to the work of Scarselli et al., Garg et al. provided a tighter bound on the generalization error of GNNs.
+
+Nevertheless, Morris et al.~\cite{morris2024futuredirectionstheorygraph} pointed out that the generalization ability of GNNs is still not well understood. The bounds established in these studies typically rely solely on general graph parameters, such as the maximum degree or total number of nodes, often overlooking more expressive graph parameters.

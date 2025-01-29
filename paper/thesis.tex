@@ -1,0 +1,171 @@
+% !TeX spellcheck = en_US
+% !TeX encoding = UTF-8
+
+% COMPILE WITH:
+% `latexmk`
+% You need lualatex and biber (in all TeXLive distributions)
+
+\documentclass[
+    numbers=noenddot,
+    %listof=totoc,
+    parskip=half-,
+    fontsize=12pt,
+    paper=a4,
+    oneside,
+    titlepage,
+    bibliography=totoc,
+    chapterprefix=false,
+    headheight=30pt,
+    footheight=30pt
+%    draft
+]{scrbook}
+
+\setcounter{secnumdepth}{3}
+
+% use lualatex or xelatex
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage[onehalfspacing]{setspace}
+\usepackage{setspace}
+% better language support
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\setotherlanguage{german}
+
+\usepackage{tocbasic}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{rotating} % 用于旋转表格
+\usepackage{siunitx}
+
+
+\usepackage[]{scrlayer-scrpage}
+
+% better bibliography (biblatex style)
+% use biber to compile
+\usepackage[citestyle=alphabetic, bibstyle=alphabetic, sorting=nyt, backend=biber, language=english, backref=true, maxcitenames=2]{biblatex}
+
+% better quotes
+% use \enquote{text}
+\usepackage[autostyle,english=american,german=quotes]{csquotes}
+\addbibresource{bibliography.bib}
+
+% appendix
+\usepackage[titletoc]{appendix}
+
+% where to put all images and figures
+\graphicspath{{images/}}
+
+% YOUR PACKAGES
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{subfig}
+
+
+% Title
+\title{TITLE}
+
+% Author
+\author{AUTHOR}
+
+% Date
+\date{\today}
+
+% CHOOSE ACCORDINGLY
+\newcommand{\thesisType}{Bachelorarbeit}
+% \newcommand{\thesisType}{Masterarbeit}
+
+\makeatletter
+\let\thetitle\@title
+\let\theauthor\@author
+\let\thedate\@date
+\makeatother
+
+\pagestyle{scrheadings}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\frontmatter
+% CHOOSE ACCORDINGLY
+\include{includes/BA-titlepage}
+% \include{includes/MA-titlepage}
+
+\addtocontents{toc}{\setcounter{tocdepth}{3}} 
+\tableofcontents
+\newpage
+
+% -- Acknowledgements (optional)
+% \include{includes/acknowledgements}
+% \cleardoublepage
+% \addcontentsline{toc}{chapter}{Acknowledgements}
+% \newpage
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Acknowledgements}
+\chapter*{Acknowledgements}
+First, I would like to thank Prof.~Christopher Morris and Prof.~Michael Schaub for the opportunity of my thesis. 
+Secondly, I would like to thank my supervisor Chendi Qian for giving me the great support to do this thesis, and also for his help in understanding the content of the thesis at the beginning, and for his help in the content and code throughout my entire bachelor thesis time.
+
+
+% -- List of figures
+\thispagestyle{empty}
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+\newpage
+
+% -- List of tables
+\thispagestyle{empty}
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\newpage
+
+
+% -- ABSTRACT
+\cleardoublepage
+\phantomsection
+\include{includes/abstract}
+% -- ABSTRACT
+% \cleardoublepage
+% \phantomsection
+% \include{includes/abstract}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mainmatter
+
+% -- Chapters
+% following IMRaD structure
+% adjust for your liking
+\include{chapters/introduction}
+\include{chapters/background}
+\include{chapters/experimentalstudy}
+\include{chapters/results}
+\include{chapters/conclusion}
+
+% -- Appendix (optional)
+\begin{appendices}
+    \input{appendix.tex}
+\end{appendices}
+\newpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\backmatter
+
+% -- Bibliography
+\printbibliography
+
+% -- Eidesstattliche Erklärung (= Affadavit)
+% \include{includes/eidesstattlicheErklaerung}
+
+
+\end{document}

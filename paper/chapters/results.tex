@@ -1,0 +1,63 @@
+\chapter{Results \& Discussion}\label{chap:results}
+
+In this chapter, the results of the experiments are presented and discussed. The experiments were conducted to evaluate the impact of different neural network structures and parameters on image reconstruction. The experiments were conducted using the four neural network architectures described in Chapter \ref{chap:experiments}. The neural networks were trained and tested using the datasets described in Section \ref{sec:datasets}. The experiments were conducted using the training and testing procedures described in Section \ref{sec:Experimental procedures}.
+
+\section{Graph parameters}
+
+The graph parameters calculated in the experiments are shown in Table \ref{tab:gp1}~\ref{tab:gp2}. 
+
+\section{Graph Convolutional Networks}
+The results of the experiments using Graph Convolutional Networks are shown in Table~\ref{tab:ge_gcn}.
+
+\begin{table}[!ht]
+    \centering
+    \begin{tabular}{p{3.5cm}|p{5cm}p{5cm}}
+    \hline
+    \toprule
+        Name & Ave. generalization error & Standard deviation \\ 
+    \midrule
+        MCF-7 & 0.002249991986900568 & 0.01604018546640873 \\
+        MCF-7H & 0.004124999046325684 & 0.02702830731868744 \\
+        MOLT-4 & 0.0 & 0.014102176763117313 \\
+        MOLT-4H & 0.008624988608062267 & 0.01870434731245041 \\
+        Mutagenicity & 0.03765624016523361 & 0.024758048355579376 \\
+        MUTAG & 0.13552632927894592 & 0.10957122594118118 \\
+        NCI1 & 0.06834375858306885 & 0.0339551605284214 \\
+        NCI109 & 0.07212500274181366 & 0.030083369463682175 \\
+        NCI-H23 & 0.003218746278434992 & 0.013211547397077084 \\
+        NCI-H23H & 0.0006250202422961593 & 0.011396590620279312 \\
+        OVCAR-8 & -0.0001249849738087505 & 0.015103230252861977 \\
+        OVCAR-8H & 0.0001562476099934429 & 0.013315632939338684 \\
+        P388 & 0.008062511682510376 & 0.01043933816254139 \\
+        P388H & 0.006343752145767212 & 0.007148966193199158 \\
+        PC-3 & 0.0008750140550546348 & 0.012619029730558395 \\
+        PC-3H & 0.0001250088243978098 & 0.00780930370092392 \\
+        PTC\_FM & 0.12454469501972198 & 0.14246851205825806 \\
+        PTC\_FR & 0.08159632235765457 & 0.09593729674816132 \\
+        PTC\_MM & 0.12555554509162903 & 0.12687508761882782 \\
+        PTC\_MR & 0.058610398322343826 & 0.11794959753751755 \\
+        SF-295 & 0.0009687542915344238 & 0.013665653765201569 \\
+        SF-295H & 0.004500013776123524 & 0.018203353509306908 \\
+        SN12C & 0.0004999935626983643 & 0.017035124823451042 \\
+        SN12CH & 0.006718760821968317 & 0.016944456845521927 \\
+        SW-620 & 5.9604645663569045e-09 & 0.006674798205494881 \\
+        SW-620H & 0.002499997615814209 & 0.008080806583166122 \\
+        UACC257 & 0.0022812604438513517 & 0.013034629635512829 \\
+        UACC257H & 6.25073880655691e-05 & 0.015311303548514843 \\
+        Yeast & 0.0022187530994415283 & 0.01859860308468342 \\
+        YeastH & 0.00024999381275847554 & 0.015245940536260605 \\
+        PROTEINS\_full & 0.11115662008523941 & 0.5160216689109802 \\
+        DD & -0.1750326007604599 & 0.3490835428237915 \\
+        ENZYMES & 0.3110416531562805 & 0.06384395807981491 \\
+        KKI & 0.04776120185852051 & 0.2546080946922302 \\
+        OHSU & 0.39824172854423523 & 0.138640895485878 \\
+        Peking\_1 & 0.2980072498321533 & 0.2580110728740692 \\
+        COLORS-3 & 0.07568749040365219 & 0.03585537523031235 \\
+        SYNTHETIC & -0.41749995946884155 & 0.3929196000099182 \\
+        SYNTHETICnew & -0.36250001192092896 & 0.45766785740852356 \\
+        Synthie & 0.14562499523162842 & 0.032582689076662064 \\ 
+        \bottomrule
+    \end{tabular}
+    \caption{Generalization error of the GCN model on 57 datasets}
+    \label{tab:ge_gcn} % ge -> generalization error
+\end{table}
