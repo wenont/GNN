@@ -1,8 +1,8 @@
 import os
-from train import get_generalization_error_from_a_dataset
+# from train import get_generalization_error_from_a_dataset
 import pandas as pd
 import logging
-from tabulate import tabulate
+# from tabulate import tabulate
 from utils import (
     get_average_degree,
     get_average_shortest_path,
@@ -151,7 +151,7 @@ def compare_generalization_error_and_parameters():
     plt.show()
 
 
-def get_correlation():
+def get_correlation(model: str = 'GCN'):
     '''
     Get the correlation between the generalization error and the parameters
     1. Ave. degree
@@ -169,7 +169,9 @@ def get_correlation():
     Use scatter plot to show the correlation between the generalization error and the parameters
     '''
 
-    df1 = pd.read_csv('results/generalization_error.csv')
+
+
+    df1 = pd.read_csv(f'results/generalization_error_bt_{model}.csv')
     df2 = pd.read_csv('results/parameters.csv')
 
     df_combined = pd.merge(df1, df2, on='Name').drop(columns=['Unnamed: 0'])
@@ -202,7 +204,7 @@ def get_correlation():
     plt.show()
     
     # save the scatter plot to a file
-    plt.savefig('results/correlation.png')
+    plt.savefig(f'results/correlation_{model}.png')
 
     # ignore the dataset with less than 1000 graphs
     # Use the function number_of_graphs to get the number of graphs
@@ -224,7 +226,7 @@ def get_correlation():
     plt.tight_layout()
 
     # save the scatter plot to a file
-    plt.savefig('results/correlation_ignore_less_than_1000.png')
+    plt.savefig(f'results/correlation_ignore_less_than_1000_{model}.png')
 
 
 def interactive_mode():
@@ -377,4 +379,5 @@ if __name__ == '__main__':
     #     handle_option(args.function)
     # else:
     #     interactive_mode()
-    get_best_hyperparameters()
+    model = 'GCN'
+    get_correlation(model)
