@@ -256,7 +256,7 @@ def get_generalization_error_from_a_dataset(dataset_name: str, model_name: str, 
     # Load dataset
     # dataset = TUDataset(root='data/TUDataset', name=dataset_name, use_node_attr=True)
     # dataset = dataset.shuffle()
-    dataset = load_dataset(dataset_name)
+    dataset = load_dataset(dataset_name, use_shuffle_seed=True)
 
     centered_line = f'Dataset: {dataset}'.center(93)
     print('=' * 93 + f'\n{centered_line}\n' + '=' * 93 + '\n')
