@@ -147,11 +147,11 @@ def compare_generalization_error_and_parameters():
     plt.xlabel('Ave. Shortest Path')
     plt.ylabel('Ave. Generalization Error')
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1.5, 1])
     plt.show()
 
 
-def get_correlation(model: str = 'GCN'):
+def get_correlation(model: str = 'SGC'):
     '''
     Get the correlation between the generalization error and the parameters
     1. Ave. degree
@@ -169,9 +169,11 @@ def get_correlation(model: str = 'GCN'):
     Use scatter plot to show the correlation between the generalization error and the parameters
     '''
 
+    # generalization_error_file = f'results/generalization_error_{model}.csv'
+    generalization_error_file = f'results/output_{model}.csv'
 
 
-    df1 = pd.read_csv(f'results/generalization_error_bt_{model}.csv')
+    df1 = pd.read_csv(generalization_error_file)
     df2 = pd.read_csv('results/parameters.csv')
 
     df_combined = pd.merge(df1, df2, on='Name').drop(columns=['Unnamed: 0'])
@@ -181,11 +183,13 @@ def get_correlation(model: str = 'GCN'):
     # if the number of graphs is less than 1000, show the point in the scatter plot with color blue
     # if the number of graphs is more than 1000 but less than 4000, show the point in the scatter plot with color green
     # if the number of graphs is more than 4000, show the point in the scatter plot with color red
-    num_columns = len(df_combined.drop(columns= ['Name', 'Standard deviation']).columns)
+    num_columns = len(df_combined.drop(columns=['Name', 'Standard deviation']).columns)
     num_rows = (num_columns + 2) // 3
-    plt.figure(figsize=(20, 20))
-    for i, column in enumerate(df_combined.drop(columns= ['Name', 'Standard deviation']).columns):
-        plt.subplot(num_rows, 3, i+1)
+    plt.figure(figsize=(10, 12))
+    for i, column in enumerate(df_combined.drop(columns=['Name', 'Standard deviation']).columns):
+        if i == 0:
+            continue
+        plt.subplot(num_rows, 3, i)
         colors = []
         for name in df_combined['Name']:
             num_graphs = number_of_graphs(name)
@@ -195,11 +199,18 @@ def get_correlation(model: str = 'GCN'):
                 colors.append('green')
             else:
                 colors.append('red')
-        plt.scatter(df_combined[column], df_combined['Ave. generalization error'], c=colors)
+        scatter = plt.scatter(df_combined[column], df_combined['Ave. generalization error'], c=colors)
         correlation = df_combined[column].corr(df_combined['Ave. generalization error'])
-        plt.title(f'{column} vs. Ave. Generalization Error\nCorrelation: {correlation:.2f}')
+        plt.title(f'Correlation: {correlation:.2f}')
         plt.xlabel(column)
         plt.ylabel('Ave. Generalization Error')
+    
+    # Create a legend for the whole plot
+    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label='< 1000 graphs'),
+               plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='green', markersize=10, label='1000-4000 graphs'),
+               plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=10, label='> 4000 graphs')]
+    plt.legend(handles=handles, loc='upper center', bbox_to_anchor=(0.5, -0.3), title='Size of the dataset')
+    plt.subplots_adjust(wspace=0.3, hspace=40)
     plt.tight_layout()
     plt.show()
     
@@ -215,16 +226,18 @@ def get_correlation(model: str = 'GCN'):
             df_combined_ignore_less_than_1000.drop(i, inplace=True)
     num_columns = len(df_combined_ignore_less_than_1000.drop(columns= ['Name', 'Standard deviation']).columns)
     num_rows = (num_columns + 2) // 3
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(10, 10))
     for i, column in enumerate(df_combined_ignore_less_than_1000.drop(columns= ['Name', 'Standard deviation']).columns):
-        plt.subplot(num_rows, 3, i+1)
+        if i == 0:
+            continue
+        plt.subplot(num_rows, 3, i)
         plt.scatter(df_combined_ignore_less_than_1000[column], df_combined_ignore_less_than_1000['Ave. generalization error'])
         correlation = df_combined_ignore_less_than_1000[column].corr(df_combined_ignore_less_than_1000['Ave. generalization error'])
-        plt.title(f'{column} vs. Ave. Generalization Error\nCorrelation: {correlation:.2f}')
+        plt.title(f'Correlation: {correlation:.2f}')
         plt.xlabel(column)
         plt.ylabel('Ave. Generalization Error')
+        # Create a legend for the whole plot
     plt.tight_layout()
-
     # save the scatter plot to a file
     plt.savefig(f'results/correlation_ignore_less_than_1000_{model}.png')
 
@@ -379,5 +392,5 @@ if __name__ == '__main__':
     #     handle_option(args.function)
     # else:
     #     interactive_mode()
-    model = 'GCN'
+    model = 'SGC'
     get_correlation(model)
