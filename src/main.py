@@ -252,18 +252,35 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
     df = pd.read_csv(dataset_csv_path)
     sweep_ids = df[df['project'] == project_name]['sweep_id'].values
 
-    df_hyperparameters = pd.DataFrame({
-        'sweep_id': [],
-        'model_name': [],  # use project name
-        'batch_size': [],
-        'hidden_size': [],
-        'dataset_name': [],
-        'normlization': [],
-        'learning_rate': [],
-        'default_patience': [],
-        'patience_plateau': [],
-        'num_hidden_layers': []
-    })
+    if project_name == 'bt_GATv2':
+        df_hyperparameters = pd.DataFrame({
+            'sweep_id': [],
+            'model_name': [],  # use project name
+            'batch_size': [],
+            'hidden_size': [],
+            'dataset_name': [],
+            'normlization': [],
+            'learning_rate': [],
+            'default_patience': [],
+            'patience_plateau': [],
+            'num_hidden_layers': [],
+            'heads': [],
+            'dropout': [],
+            'residual': [],
+        })
+    else:
+        df_hyperparameters = pd.DataFrame({
+            'sweep_id': [],
+            'model_name': [],  # use project name
+            'batch_size': [],
+            'hidden_size': [],
+            'dataset_name': [],
+            'normlization': [],
+            'learning_rate': [],
+            'default_patience': [],
+            'patience_plateau': [],
+            'num_hidden_layers': []
+        })
 
     for sweep_id in sweep_ids:
         sweep = api.sweep(
@@ -277,22 +294,40 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
         # get the best hyperparameters
         best_hyperparameters = runs[0].config
         # save the best hyperparameters to dataframe
-        df_hyperparameters.loc[len(df_hyperparameters)] = [
-            sweep_id,
-            project_name,
-            best_hyperparameters['batch_size'],
-            best_hyperparameters['hidden_size'],
-            best_hyperparameters['dataset_name'],
-            best_hyperparameters['normlization'],
-            best_hyperparameters['learning_rate'],
-            best_hyperparameters['default_patience'],
-            best_hyperparameters['patience_plateau'],
-            best_hyperparameters['num_hidden_layers']
-        ]
+
+        if project_name == 'bt_GATv2':
+            df_hyperparameters.loc[len(df_hyperparameters)] = [
+                sweep_id,
+                project_name,
+                best_hyperparameters['batch_size'],
+                best_hyperparameters['hidden_size'],
+                best_hyperparameters['dataset_name'],
+                best_hyperparameters['normlization'],
+                best_hyperparameters['learning_rate'],
+                best_hyperparameters['default_patience'],
+                best_hyperparameters['patience_plateau'],
+                best_hyperparameters['num_hidden_layers'],
+                best_hyperparameters['heads'],
+                best_hyperparameters['dropout'],
+                best_hyperparameters['residual'],
+            ]
+        else:
+            df_hyperparameters.loc[len(df_hyperparameters)] = [
+                sweep_id,
+                project_name,
+                best_hyperparameters['batch_size'],
+                best_hyperparameters['hidden_size'],
+                best_hyperparameters['dataset_name'],
+                best_hyperparameters['normlization'],
+                best_hyperparameters['learning_rate'],
+                best_hyperparameters['default_patience'],
+                best_hyperparameters['patience_plateau'],
+                best_hyperparameters['num_hidden_layers']
+            ]
 
     # save the best hyperparameters to csv, and print the table, do not replace the existing file
     df_hyperparameters.to_csv(f'results/best_hyperparameters_{project_name}.csv', mode='a')
-    print(tabulate(df_hyperparameters, headers='keys', tablefmt='psql'))
+    # print(tabulate(df_hyperparameters, headers='keys', tablefmt='psql'))
 
 
 def sum_the_parameters():
@@ -379,5 +414,7 @@ if __name__ == '__main__':
     #     handle_option(args.function)
     # else:
     #     interactive_mode()
-    model = 'GCN'
-    get_correlation(model)
+    # model = 'GCN'
+    # get_correlation(model)
+
+    get_best_hyperparameters('bt_GATv2')
