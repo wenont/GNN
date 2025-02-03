@@ -22,7 +22,7 @@ The dataset used for the classification is TUDataset~\cite{morris2020tudataset}.
 
 For the dataset with large size, the first 4000 data points are selected. The remaining data points are discarded. The reason is that some datasets are too large to be trained in a reasonable amount of time.
 
-I list information about the 50 datasets used in the experiment in the appendix~\ref{sec:}.
+I list information about the 49 datasets used in the experiment in the appendix~\ref{sec:TODO}.
 
 \subsection{Hyperparameters tuning}\label{sec:hyperparameters tuning}
 Before training the models, for each pair of dataset and model, the hyperparameters of the model are tuned. In the experiment, 5-fold cross-validation is used to tune the hyperparameters instead of 10-fold cross validation in the final experiment. The reason is that the 10-fold cross-validation is computationally expensive and time-consuming. 
@@ -34,7 +34,7 @@ The hyperparameters are tuned using the Bayesian optimization method\cite{frazie
 There are five models and 57 datasets, resulting in 285 pairs of dataset and model. For each pair, the hyperparameters are tuned using the Bayesian optimization method. The hyperparameters are tuned using the validation dataset. The validation dataset is a subset of the training dataset that is used to tune the hyperparameters of the model. The hyperparameters that result in the highest validation accuracy are selected as the optimal hyperparameters for the model.
 
 \subsection{Models}\label{sec:models}
-In the experiment, I plan to use different GNN layers in the model, including Graph Convolutional Networks(GCN)~\cite{kipf2016semi}, Graph Attention Networks(GAT)~\cite{velickovic2020pointer}, Graph Attention Networks(GATv2)~\cite{brody2021attentive}, Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural}. The GCN model is shown in the appendix. The GCN model consists of four GCN layers, each followed by a ReLU activation function. The output of the last GCN layer is passed through a global mean pooling layer, followed by two fully connected layers.
+In the experiment, I plan to use different GNN layers in the model, including Graph Convolutional Networks(GCN)~\cite{kipf2016semi}, Graph Attention Networks(GAT)~\cite{velickovic2020pointer}, Graph Attention Networks v2(GATv2)~\cite{brody2021attentive}, Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural}. The GCN model is shown in the appendix. The GCN model consists of four GCN layers, each followed by a ReLU activation function. The output of the last GCN layer is passed through a global mean pooling layer, followed by two fully connected layers.
 
 \subsection{Experimental details}
 The Adam optimizer~\cite{kingma2014adam} is considered to be employed in the model. To prevent overfitting and to optimize the use of time, the early stopping is employed. The loss function is defined as the cross-entropy loss function. The hyperparameters of the model are considered to be tuned. The hyperparameters include the learning rate, batch size, hidden dimension, number of epochs, and patience in early stopping. The generalization error is calculated as the difference between the training accuracy and the test accuracy. 
