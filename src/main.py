@@ -281,6 +281,20 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
             'dropout': [],
             'residual': [],
         })
+    elif project_name == 'bt_MPNN':
+        df_hyperparameters = pd.DataFrame({
+            'sweep_id': [],
+            'model_name': [],  # use project name
+            'batch_size': [],
+            'hidden_size': [],
+            'dataset_name': [],
+            'normlization': [],
+            'learning_rate': [],
+            'default_patience': [],
+            'patience_plateau': [],
+            'num_hidden_layers': [],
+            'mlp_hidden_dim': []
+        })
     else:
         df_hyperparameters = pd.DataFrame({
             'sweep_id': [],
@@ -323,6 +337,20 @@ def get_best_hyperparameters(project_name: str = 'bt_GCN'):
                 best_hyperparameters['heads'],
                 best_hyperparameters['dropout'],
                 best_hyperparameters['residual'],
+            ]
+        elif project_name == 'bt_MPNN':
+            df_hyperparameters.loc[len(df_hyperparameters)] = [
+                sweep_id,
+                project_name,
+                best_hyperparameters['batch_size'],
+                best_hyperparameters['hidden_size'],
+                best_hyperparameters['dataset_name'],
+                best_hyperparameters['normlization'],
+                best_hyperparameters['learning_rate'],
+                best_hyperparameters['default_patience'],
+                best_hyperparameters['patience_plateau'],
+                best_hyperparameters['num_hidden_layers'],
+                best_hyperparameters['mlp_hidden_dim']
             ]
         else:
             df_hyperparameters.loc[len(df_hyperparameters)] = [
@@ -430,4 +458,5 @@ if __name__ == '__main__':
     # model = 'GCN'
     # get_correlation(model)
 
-    get_best_hyperparameters('bt_GATv2')
+    project_name = 'bt_MPNN'
+    get_best_hyperparameters(project_name)
