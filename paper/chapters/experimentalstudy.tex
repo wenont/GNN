@@ -6,42 +6,36 @@ The following section outlines the planned methods and materials to be employed 
 The Experimental procedures are as follows:
 
 \begin{enumerate}
-    \item Obtain the dataset using the setup outlined in Section~\ref{sec:datasets}.
-    \item Tune the hyperparameters using Bayesian optimization, as detailed in Section~\ref{sec:hyperparameters tuning}.
-    \item Train the models using the optimized hyperparameters and compute their generalization errors.
-    \item In the meanwile, calculate the graph parameters for each dataset, as detailed in Section~\ref{sec:graph parameters}.
+    \item Obtain the dataset following the setup described in Section~\ref{sec:datasets}.
+    \item Perform hyperparameter optimization using Bayesian methods, as detailed in Section~\ref{sec:hyperparameters tuning}.
+    \item Train the models with the optimized hyperparameters and evaluate their generalization errors.
+    \item Concurrently, calculate the graph parameters for each dataset, as detailed in Section~\ref{sec:practical_graph_parameters}.
     \item Finally, evaluate the impact of the graph parameters on the generalization error of the models by calculating the correlation between the graph parameters and the generalization error.
 \end{enumerate}
 
 
-\subsection{Training Framework}
+\subsection{Training framework}
 The training framework is based on PyTorch Geometric~\cite{fey2019fast}. PyTorch Geometric is a library for deep learning on graphs and other irregular structures. It consists of various methods and utilities to ease the implementation of GNNs. 
 
 \subsection{Datasets}\label{sec:datasets}
-The dataset used for the classification is TUDataset~\cite{morris2020tudataset}. TUDataset is often used for the GNN evaluation. It consists of data from different domains, including small molecules, bioinformatics, social networks and synthetic. Since the size of some datasets is quite small (less than 500 data points/graphs), I use 10-fold cross validation in the training process, in order to fully utilize the data. A dataset is split into 1:1:8, where one of the folds is treated as the test dataset and another is treated as the validation dataset. The remaining folds are used for training. The training is repeated 10 times, each time with a different test fold. The average of the generalization error over the 10 runs is calculated as the final generalization error of the model.
+The dataset used for the classification is TUDataset~\cite{morris2020tudataset}. TUDataset is often used for the GNN evaluation. It consists of data from different domains, including small molecules, bioinformatics, social networks and synthetic. Since the size of some datasets is quite small (less than 500 data points/graphs), 10-fold cross-validation is implemented to maximize data utilization.  The dataset is divided into three parts in a 1:1:8 ratio, with one portion designated as the test set, another as the validation set, and the remaining larger portion used for training. The remaining folds are used for training. The training is repeated 10 times, each time with a different test/val fold. The average of the generalization error over the 10 runs is calculated as the final generalization error of the model.
 
-For the dataset with large size, the first 4000 data points are selected. The remaining data points are discarded. The reason is that some datasets are too large to be trained in a reasonable amount of time.
+For the dataset with large size, the random 4000 data points are selected. The remaining data points are discarded. The reason is that some datasets are too large to be trained in a reasonable amount of time.
 
-I list information about the 49 datasets used in the experiment in the appendix~\ref{sec:TODO}.
+General information of the 49 datasets utilized in the experiment are provided in Appendix~\ref{chap:basic-info}.
 
 \subsection{Hyperparameters tuning}\label{sec:hyperparameters tuning}
 Before training the models, for each pair of dataset and model, the hyperparameters of the model are tuned. In the experiment, 5-fold cross-validation is used to tune the hyperparameters instead of 10-fold cross validation in the final experiment. The reason is that the 10-fold cross-validation is computationally expensive and time-consuming. 
 
-The hyperparameters include the learning rate, batch size, hidden dimension, number of epochs, patience in early stopping, number of hidden layers, type of normalization, and patience of plateau scheduler. Additionally, for the GATv2 model, the number of heads, the dropout rate, and residual are also tuned.
+The hyperparameters were optimized using the Bayesian optimization method~\cite{frazier2018tutorial}, facilitated by the Weights and Biases (WandB) framework~\cite{wandb}, which enabled precise tracking of validation accuracy and corresponding hyperparameters throughout the tuning process. A total of 196 dataset-model pairs were evaluated, derived from the combination of four models and 49 datasets. For each pair, the optimization process systematically adjusted hyperparameters to maximize validation accuracy.
 
-The hyperparameters are tuned using the Bayesian optimization method\cite{frazier2018tutorial}. The hyperparameters that result in the highest validation accuracy are selected as the optimal hyperparameters for the model. 
-
-There are five models and 57 datasets, resulting in 285 pairs of dataset and model. For each pair, the hyperparameters are tuned using the Bayesian optimization method. The hyperparameters are tuned using the validation dataset. The validation dataset is a subset of the training dataset that is used to tune the hyperparameters of the model. The hyperparameters that result in the highest validation accuracy are selected as the optimal hyperparameters for the model.
+The hyperparameters that have been tuned include the learning rate, batch size, hidden dimension, number of epochs, patience in early stopping, number of hidden layers, type of normalization, and patience of plateau scheduler. Additionally, for the GATv2 model, the number of heads, the dropout rate, and residual are also tuned. Furthermore, for the MPNN model, the number of MLP layers is tuned.
 
 \subsection{Models}\label{sec:models}
-In the experiment, I plan to use different GNN layers in the model, including Graph Convolutional Networks(GCN)~\cite{kipf2016semi}, Graph Attention Networks(GAT)~\cite{velickovic2020pointer}, Graph Attention Networks v2(GATv2)~\cite{brody2021attentive}, Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural}. The GCN model is shown in the appendix. The GCN model consists of four GCN layers, each followed by a ReLU activation function. The output of the last GCN layer is passed through a global mean pooling layer, followed by two fully connected layers.
+In the experiment, I used four different GNN layers in each model, including Graph Convolutional Networks(GCN)~\cite{kipf2016semi}, Graph Attention Networks(GAT)~\cite{velickovic2020pointer}, Graph Attention Networks v2(GATv2)~\cite{brody2021attentive}, Simplified Graph Convolution(SGC)~\cite{wu2019simplifying}, and Message Passing Neural Networks(MPNN)~\cite{gilmer2017neural}. 
 
-\subsection{Experimental details}
-The Adam optimizer~\cite{kingma2014adam} is considered to be employed in the model. To prevent overfitting and to optimize the use of time, the early stopping is employed. The loss function is defined as the cross-entropy loss function. The hyperparameters of the model are considered to be tuned. The hyperparameters include the learning rate, batch size, hidden dimension, number of epochs, and patience in early stopping. The generalization error is calculated as the difference between the training accuracy and the test accuracy. 
-
-
-\section{Graph Parameters Under Investigation}\label{sec:graph parameters}
-As graph parameters defined abstractly in the section~\ref{sec:graph_parameters}, I give here the concrete definition of the graph parameters that are used in the experiment. The graph parameters are calculated for each dataset and used as input features for the model. The graph parameters are calculated using the NetworkX library~\cite{hagberg2008exploring}.
+\section{Graph parameters under investigation}\label{sec:practical_graph_parameters}
+As graph parameters defined abstractly in the section~\ref{sec:theoretical_graph_parameters}, I give here the concrete definition of the graph parameters that are used in the experiment. The graph parameters are calculated for each dataset and used as input features for the model. The graph parameters are calculated using the NetworkX library~\cite{hagberg2008exploring}.
 
 \begin{description}
     \item [Average degree] The average degree of the graph $d_{avg}$ is defined as the average of the degrees of all nodes in the graph, that is
@@ -51,9 +45,9 @@ As graph parameters defined abstractly in the section~\ref{sec:graph_parameters}
 a = \frac{1}{|V|(|V|-1)} \sum_{v \in V} \sum_{w \in V, w \neq v} d(v, w)
     $$
 
-    \item [Graph diameter] The graph diameter $d$ is the maximum of the shortest paths between all pairs of nodes in the graph, that is,
+     \item [Graph diameter] The graph diameter $\delta$ is the maximum of the shortest paths between all pairs of nodes in the graph, that is,
     $$
-d = \max_{v \in V} \max_{w \in V, w \neq v} d(v, w)
+        \delta = \max_{v \in V} \max_{w \in V, w \neq v} d(v, w)
     $$
 
     \item [Graph density] The graph density $p$ is the ratio of the number of edges in the graph to the number of the maximum possible edges in the graph, that is,
@@ -61,7 +55,7 @@ d = \max_{v \in V} \max_{w \in V, w \neq v} d(v, w)
 p = \frac{2|E|}{|V|(|V|-1)}
     $$
     
-    \item [Graph clustering coefficient] The graph clustering coefficient $C$ is a measure of the degree to which nodes in a graph tend to cluster together. The clustering coefficient of a node $v$ (as known as the local clustering coefficient) is defined as the fraction of the number of triangles that include node $v$ to the maximum possible number of triples centered on node $v$. The clustering coefficient of the graph (as known as the global clustering coefficient) is defined as the average of the clustering coefficients of all nodes in the graph. The formal definition is
+    \item [Graph clustering coefficient]~\cite{luce1949method} The graph clustering coefficient $C$ is a measure of the degree to which nodes in a graph tend to cluster together. The clustering coefficient of a node $v$ (as known as the local clustering coefficient) is defined as the fraction of the number of triangles that include node $v$ to the maximum possible number of triples centered on node $v$. The clustering coefficient of the graph (as known as the global clustering coefficient) is defined as the average of the clustering coefficients of all nodes in the graph. The formal definition is
     $$
 C = \frac{1}{|V|} \sum_{v \in V} \frac{2\cdot |\{(i,j)\in E \mid i, j \in N(v)\}|}{d(v)(d(v)-1)}
     $$
@@ -71,18 +65,18 @@ C = \frac{1}{|V|} \sum_{v \in V} \frac{2\cdot |\{(i,j)\in E \mid i, j \in N(v)\}
     
     \textit{Degree centrality} is identical to the average degree of the graph defined above. 
     
-    \textit{Closeness centrality} $C_C(v)$ is defined as the reciprocal of the sum of the length of the shortest paths from the node $v$ to all other nodes in the graph, that is 
+    \textit{Closeness centrality}~\cite{bavelas1950communication} $C_C(v)$ is defined as the reciprocal of the sum of the length of the shortest paths from the node $v$ to all other nodes in the graph, that is 
     $$C_C(v) = \frac{1}{\sum_{w\in V}{d(v ,w)}}$$
     where $d(v, w)$ is the shortest path between node $v$ and node $w$. 
     
-    \textit{Betweenness centrality} $C_B(v)$ is the sum of the fraction of the shortest paths between all pairs of nodes that pass through node $v$, that is
+    \textit{Betweenness centrality}~\cite{freeman1977set} $C_B(v)$ is the sum of the fraction of the shortest paths between all pairs of nodes that pass through node $v$, that is
     
     $$
         C_B(v) = \sum_{s,t \in V} \frac{\sigma_{st}(v)}{\sigma_{st}}
     $$
     where $\sigma_{st}$ is the number of the shortest paths between nodes $s$ and $t$, and $\sigma_{st}(v)$ is the number of the shortest paths between nodes $s$ and $t$ that pass through node $v$.
     
-    \textit{Eigenvector centrality} is a measure of the influence of a node in a graph based on the concept that connections to high-scoring nodes contribute more to the score of the node in question. Formally, the eigenvector centrality $C_E(v)$ of a node $v$  is defined as the $v$-th component of the eigenvector corresponding to the largest eigenvalue of the adjacency matrix $A$ of the graph. Mathematically, it can be expressed as:
+    \textit{Eigenvector centrality}~\cite{bonacich1972factoring}\cite{bonacich2007some} is a measure of the influence of a node in a graph based on the concept that connections to high-scoring nodes contribute more to the score of the node in question. Formally, the eigenvector centrality $C_E(v)$ of a node $v$  is defined as the $v$-th component of the eigenvector corresponding to the largest eigenvalue of the adjacency matrix $A$ of the graph. Mathematically, it can be expressed as:
     
     \[ C_E(v) = \frac{1}{\lambda} \sum_{u \in N(v)} a_{vu} C_E(u) \]
     
@@ -95,11 +89,5 @@ $ C_E(u)$  is the eigenvector centrality of node $u$.
 
     \item [Average number of coloring in the 1-WL algorithm] 
     \sloppy
-    The 1-dimensional Weisfeiler-Leman algorithm (1-WL)~\cite{weisfeiler1968reduction} is an algorithm that assigns a unique label(color) to each node in the graph, also known as color refinement. The average number of coloring in the 1-WL algorithm is defined as the average number of colors used to color the nodes in the graph. The 1-WL algorithm is a powerful graph isomorphism algorithm that can be used to determine if two graphs are isomorphic. I give the procedure of the 1-WL algorithm here:
-    \begin{enumerate}
-        \item Assign the same color to all nodes in the graph.
-        \item Two nodes $v$, $u$ are assigned a different color if there is a color c such that the number of c-colored neighbors of $u$ is not equal to the number of c-colored neighbors of $v$.
-        \item Repeat step 2 until the colors of all nodes do not change.
-    \end{enumerate}
-    
+    The 1-dimensional Weisfeiler-Leman algorithm (1-WL)~\cite{weisfeiler1968reduction} is an algorithm that assigns a unique label (color) to each node in the graph, also known as color refinement. The average number of coloring in the 1-WL algorithm is defined as the average number of colors used to color the nodes in the graph. The 1-WL algorithm is a powerful graph isomorphism algorithm that can be used to determine if two graphs are isomorphic for a broad class of graphs~\cite{babai1979canonical}.  
 \end{description}
